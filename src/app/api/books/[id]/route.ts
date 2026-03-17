@@ -31,13 +31,14 @@ export async function GET(
       where: { id },
       include: {
         documents: {
+          where: { deletedAt: null },
           include: {
             style: true,
           },
           orderBy: [{ chapterOrder: 'asc' }, { createdAt: 'asc' }],
         },
         _count: {
-          select: { documents: true },
+          select: { documents: { where: { deletedAt: null } } },
         },
       },
     });

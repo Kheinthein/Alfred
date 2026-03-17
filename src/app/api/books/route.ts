@@ -26,7 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       orderBy: { sortOrder: 'asc' },
       include: {
         _count: {
-          select: { documents: true },
+          select: { documents: { where: { deletedAt: null } } },
         },
       },
     });
