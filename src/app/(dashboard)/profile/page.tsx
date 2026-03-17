@@ -1,12 +1,13 @@
 'use client';
 
 import { Spinner } from '@components/Spinner';
+import { WritingStats } from '@components/WritingStats';
 import { useAuth } from '@shared/providers/AuthProvider';
 import { apiClient } from '@shared/services/apiClient';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { CheckCircle, LogOut, Trash2, User } from 'lucide-react';
+import { BarChart2, CheckCircle, LogOut, Trash2, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -31,6 +32,7 @@ export default function ProfilePage(): React.JSX.Element {
   const { logout } = useAuth();
   const queryClient = useQueryClient();
 
+  const [activeTab, setActiveTab] = useState<'profile' | 'stats'>('profile');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
@@ -126,13 +128,13 @@ export default function ProfilePage(): React.JSX.Element {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-      <div className="mb-8 flex items-center gap-3">
+      <div className="mb-6 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ai-primary/10 text-ai-primary">
           <User size={20} />
         </div>
         <div>
           <h1 className="font-writing text-2xl font-bold text-parchment-text">
-            Mon profil
+            Mon compte
           </h1>
           {profile && (
             <p className="font-interface text-xs text-neutral-textSecondary">
@@ -145,11 +147,48 @@ export default function ProfilePage(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Formulaire profil */}
-      <form
-        onSubmit={handleSubmit}
-        className="scroll-parchment space-y-5 rounded-xl p-6"
-      >
+      {/* Onglets */}
+      <div className="mb-6 flex gap-1 rounded-lg border border-parchment-border bg-parchment-border/10 p-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          className={`font-interface flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+            activeTab === 'profile'
+              ? 'bg-white text-parchment-text shadow-sm'
+              : 'text-neutral-textSecondary hover:text-parchment-text'
+          }`}
+        >
+          <User size={15} />
+          Profil
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('stats')}
+          className={`font-interface flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+            activeTab === 'stats'
+              ? 'bg-white text-parchment-text shadow-sm'
+              : 'text-neutral-textSecondary hover:text-parchment-text'
+          }`}
+        >
+          <BarChart2 size={15} />
+          Stats
+        </button>
+      </div>
+
+      {/* Onglet Stats */}
+      {activeTab === 'stats' && (
+        <div>
+          <WritingStats />
+        </div>
+      )}
+
+      {/* Onglet Profil */}
+      {activeTab === 'profile' && (
+        <>
+        <form
+          onSubmit={handleSubmit}
+          className="scroll-parchment space-y-5 rounded-xl p-6"
+        >
         <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-neutral-textSecondary">
           Informations personnelles
         </h2>
@@ -305,6 +344,8 @@ export default function ProfilePage(): React.JSX.Element {
           </button>
         </div>
       </div>
+      </>
+      )}
 
       {/* Dialog suppression compte */}
       {showDeleteConfirm &&

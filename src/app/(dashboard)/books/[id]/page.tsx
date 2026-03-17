@@ -46,6 +46,9 @@ export default function BookDetailPage() {
     'idle' | 'saving' | 'success' | 'error'
   >('idle');
 
+  const [showChapterForm, setShowChapterForm] = useState(false);
+  const [chapterForm, setChapterForm] = useState({ title: '', styleId: '' });
+
   useEffect(() => {
     if (book?.chapters) {
       setOrderedChapters(book.chapters);
@@ -98,41 +101,27 @@ export default function BookDetailPage() {
   });
 
   const createChapterMutation = useMutation({
-    mutationFn: async () => {
-      // 1. Créer un nouveau document
-      const defaultStyle = styles?.[0];
-      if (!defaultStyle) {
-        console.error('❌ Aucun style disponible');
-        throw new Error('Aucun style disponible');
-      }
-
+    mutationFn: async ({
+      title,
+      styleId,
+    }: {
+      title: string;
+      styleId: string;
+    }) => {
       const chapterNumber = orderedChapters.length + 1;
-
-      console.log('🔧 Création chapitre:', {
-        title: `Chapitre ${chapterNumber}`,
-        styleId: defaultStyle.id,
-        styleName: defaultStyle.name,
-      });
-
       const newDoc = await documentService.create({
-        title: `Chapitre ${chapterNumber}`,
-        content: '...', // Placeholder - l'utilisateur peut le remplacer
-        styleId: defaultStyle.id,
+        title: title || `Chapitre ${chapterNumber}`,
+        content: 'Commencez à écrire ce chapitre...',
+        styleId,
       });
-
-      console.log('✅ Document créé:', newDoc.id);
-
-      // 2. Le lier au livre
       await documentService.moveToBook(newDoc.id, bookId, chapterNumber - 1);
-
-      console.log('✅ Document lié au livre');
-
       return newDoc.id;
     },
     onSuccess: (newDocId) => {
       void queryClient.invalidateQueries({ queryKey: ['book', bookId] });
       void queryClient.invalidateQueries({ queryKey: ['documents'] });
-      // Rediriger vers l'édition du nouveau chapitre
+      setShowChapterForm(false);
+      setChapterForm({ title: '', styleId: '' });
       router.push(`/documents/${newDocId}`);
     },
   });
@@ -426,16 +415,78 @@ export default function BookDetailPage() {
             </DndContext>
           )}
 
-          {/* Bouton Nouveau chapitre */}
-          <button
-            onClick={() => createChapterMutation.mutate()}
-            disabled={createChapterMutation.isPending || !styles}
-            className="font-interface mt-4 w-full rounded-lg border-2 border-ai-primary bg-ai-primary/10 px-4 py-3 text-sm font-semibold text-ai-primary transition-all hover:bg-ai-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ai-primary focus:ring-offset-2"
-          >
-            {createChapterMutation.isPending
-              ? 'Création...'
-              : '+ Nouveau chapitre'}
-          </button>
+          {/* Formulaire / bouton Nouveau chapitre */}
+          {showChapterForm ? (
+            <div className="mt-4 rounded-lg border border-parchment-border bg-writing-editor p-4 space-y-3">
+              <div>
+                <label htmlFor="chapter-title" className="font-writing block text-xs font-medium text-parchment-text mb-1">
+                  Titre du chapitre
+                </label>
+                <input
+                  id="chapter-title"
+                  value={chapterForm.title}
+                  onChange={(e) =>
+                    setChapterForm({ ...chapterForm, title: e.target.value })
+                  }
+                  placeholder={`Chapitre ${orderedChapters.length + 1}`}
+                  className="font-writing w-full rounded-md border border-parchment-border bg-white px-3 py-1.5 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+                />
+              </div>
+              <div>
+                <label htmlFor="chapter-style" className="font-writing block text-xs font-medium text-parchment-text mb-1">
+                  Style
+                </label>
+                <select
+                  id="chapter-style"
+                  value={chapterForm.styleId}
+                  onChange={(e) =>
+                    setChapterForm({ ...chapterForm, styleId: e.target.value })
+                  }
+                  className="font-writing w-full rounded-md border border-parchment-border bg-white px-3 py-1.5 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+                >
+                  <option value="">Choisir un style</option>
+                  {styles?.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() =>
+                    createChapterMutation.mutate({
+                      title: chapterForm.title,
+                      styleId: chapterForm.styleId,
+                    })
+                  }
+                  disabled={
+                    !chapterForm.styleId || createChapterMutation.isPending
+                  }
+                  className="font-interface flex-1 rounded-lg bg-ai-primary px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-ai-primaryAlt disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ai-primary"
+                >
+                  {createChapterMutation.isPending ? 'Création...' : 'Créer'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowChapterForm(false);
+                    setChapterForm({ title: '', styleId: '' });
+                  }}
+                  className="font-interface rounded-lg border border-parchment-border px-3 py-2 text-xs font-medium text-neutral-textSecondary transition-all hover:bg-parchment-border/20 focus:outline-none focus:ring-2 focus:ring-parchment-shadow"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowChapterForm(true)}
+              disabled={!styles?.length}
+              className="font-interface mt-4 w-full rounded-lg border-2 border-ai-primary bg-ai-primary/10 px-4 py-3 text-sm font-semibold text-ai-primary transition-all hover:bg-ai-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-ai-primary focus:ring-offset-2"
+            >
+              + Nouveau chapitre
+            </button>
+          )}
 
           {/* Bouton importer un fichier */}
           <input

@@ -27,7 +27,6 @@ import { styleService } from '@shared/services/styleService';
 import { tagService, TagDTO } from '@shared/services/tagService';
 import type { BookDTO, DocumentDTO } from '@shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { WritingStats } from '@components/WritingStats';
 import { Plus, Search, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -460,11 +459,6 @@ export default function DocumentsPage() {
             )}
           </section>
         )}
-
-        {/* Statistiques */}
-        <section className="mb-6">
-          <WritingStats />
-        </section>
 
         <section>
           <div className="mb-4 flex items-center justify-between">
