@@ -48,9 +48,13 @@ COPY --from=builder /app/public ./public
 # Copy Prisma files
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create logs directory with proper permissions
 RUN mkdir -p /app/logs && chown -R nextjs:nodejs /app/logs
+
+COPY --from=builder /app/docker/start.sh ./start.sh
 
 USER nextjs
 
@@ -59,5 +63,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "start.sh"]
 
