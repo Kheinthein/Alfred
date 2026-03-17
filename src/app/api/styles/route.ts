@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@shared/infrastructure/database/prisma';
 import { handleError } from '@/app/api/middleware/errorHandler';
+import { prisma } from '@shared/infrastructure/database/prisma';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/styles

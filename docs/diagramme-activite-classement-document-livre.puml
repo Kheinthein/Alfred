@@ -1,0 +1,35 @@
+@startuml
+title Alfred — Diagramme d’activité — Classer un document dans un livre
+
+start
+
+:Accéder à "/documents";
+:Afficher la liste des documents et des livres;
+
+if (Classer un document ?) then (oui)
+  :Glisser-déposer un document\nsur un livre (drop zone);
+  :Affecter le document au livre\n+ calculer un ordre de chapitre;
+  :Enregistrer le classement;
+  if (Échec) then (oui)
+    :Afficher une erreur;
+    stop
+  endif
+endif
+
+if (Retirer un document d’un livre ?) then (oui)
+  :Glisser-déposer sur\nla zone "retirer du livre"\nou action "Retirer";
+  :Détacher du livre\n(bookId = null, chapterOrder = null);
+  :Enregistrer le retrait;
+endif
+
+if (Réorganiser les chapitres ?) then (oui)
+  :Accéder à "/books/[id]";
+  :Glisser-déposer un chapitre\npour changer l’ordre;
+  :Enregistrer le nouvel ordre\n(par mise à jour des chapterOrder);
+  if (Échec) then (oui)
+    :Restaurer l’ordre précédent;
+  endif
+endif
+
+stop
+@enduml

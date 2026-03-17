@@ -106,7 +106,8 @@ test.describe('Authentification E2E', () => {
     await page.click('button[type="submit"]');
 
     // Vérifier qu'un message d'erreur est affiché
-    await expect(page.locator('.text-red-600').first()).toBeVisible({
+    // On cible le texte réel plutôt qu'une classe CSS (plus robuste aux changements de style)
+    await expect(page.getByText('401', { exact: false })).toBeVisible({
       timeout: 5000,
     });
 

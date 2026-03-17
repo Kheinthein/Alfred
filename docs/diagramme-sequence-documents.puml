@@ -1,0 +1,43 @@
+@startuml
+title Alfred — Diagramme de séquence — Documents (liste, création, édition, ordre)
+
+actor "Utilisateur" as U
+boundary "UI Web" as UI
+control "API Documents" as API
+database "Base de données" as DB
+
+== Charger la liste ==
+U -> UI : Ouvrir "/documents"
+UI -> API : GET /api/documents\n(Authorization: Bearer ...)
+API -> DB : Lire documents (par userId)\ntriés par sortOrder
+DB --> API : documents[]
+API --> UI : { documents[] }
+UI --> U : Afficher la liste
+
+== Créer un document ==
+U -> UI : Saisir titre + style\nCliquer "Créer"
+UI -> API : POST /api/documents\n{ title, styleId, content }
+API -> DB : Vérifier le style (writingStyle)
+DB --> API : style existant
+API -> DB : Créer le document
+DB --> API : document{id,...}
+API --> UI : 201 { document }
+UI --> U : Ouvrir "/documents/[id]"
+
+== Sauvegarde automatique ==
+U -> UI : Modifier le contenu
+UI -> API : PUT /api/documents/[id]\n{ content?, title? }
+API -> DB : Vérifier propriétaire + mettre à jour
+DB --> API : document mis à jour
+API --> UI : { document (maj) }
+UI --> U : Mettre à jour l’indicateur de sauvegarde
+
+== Réorganiser l’ordre ==
+U -> UI : Drag & drop (liste)
+UI -> API : POST /api/documents/reorder\n{ documentIds[] }
+API -> DB : Mettre à jour sortOrder
+DB --> API : ok
+API --> UI : { reordered: n }
+UI --> U : Ordre affiché mis à jour
+
+@enduml

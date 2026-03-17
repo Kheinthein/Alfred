@@ -162,6 +162,345 @@ Les tests sont organisés en trois niveaux : tests unitaires pour la logique mé
 
 L'application est conteneurisée avec Docker pour faciliter le déploiement. La configuration Docker inclut l'application Next.js, la base de données, et toutes les dépendances nécessaires. Le déploiement est automatisé via GitHub Actions.
 
+### 5.3. Maquettes et Enchaînement des Maquettes
+
+#### 5.3.1. Cartographie
+
+**Schéma de l'arborescence de l'application :**
+
+L'application Alfred suit une structure hiérarchique simple organisée autour de deux zones principales : la zone d'authentification et la zone d'application.
+
+```
+Alfred - Assistant d'Écriture
+│
+├── Page d'accueil (/)
+│   ├── Logo Alfred
+│   ├── Titre et description
+│   ├── Bouton "Se connecter" → /login
+│   ├── Bouton "Créer un compte" → /register
+│   └── Lien "Documentation API" → /api/docs
+│
+├── Zone d'authentification
+│   ├── Page de connexion (/login)
+│   │   ├── Formulaire de connexion
+│   │   ├── Lien vers inscription → /register
+│   │   └── Redirection automatique si déjà connecté → /documents
+│   │
+│   └── Page d'inscription (/register)
+│       ├── Formulaire d'inscription
+│       ├── Lien vers connexion → /login
+│       └── Redirection automatique si déjà connecté → /documents
+│
+└── Zone d'application (nécessite authentification)
+    ├── Page liste des documents (/documents)
+    │   ├── Header avec logo et menu utilisateur
+    │   ├── Liste des documents (cartes)
+    │   ├── Bouton "Créer un document"
+    │   ├── Formulaire de création de document
+    │   └── Navigation vers document → /documents/[id]
+    │
+    └── Page édition de document (/documents/[id])
+        ├── Header avec logo et menu utilisateur
+        ├── Zone d'édition (éditeur de texte)
+        ├── Panel d'analyse IA (sidebar)
+        ├── Chat avec l'assistant IA
+        └── Bouton retour → /documents
+```
+
+**Description des pages du site :**
+
+**Page d'accueil (/) :**
+
+La page d'accueil présente l'application Alfred avec le logo, un titre accrocheur, et une description du service. Elle contient trois boutons principaux : "Se connecter" qui redirige vers la page de connexion, "Créer un compte" qui redirige vers la page d'inscription, et un lien vers la documentation API. Cette page est accessible sans authentification et sert de point d'entrée pour les nouveaux visiteurs.
+
+**Page de connexion (/login) :**
+
+La page de connexion contient un formulaire avec deux champs : email et mot de passe. Le formulaire inclut une validation côté client et serveur. Un lien permet de rediriger vers la page d'inscription pour les utilisateurs qui n'ont pas encore de compte. Si l'utilisateur est déjà connecté, il est automatiquement redirigé vers la page de liste des documents.
+
+**Page d'inscription (/register) :**
+
+La page d'inscription contient un formulaire avec les champs email et mot de passe (avec confirmation). Le formulaire inclut une validation pour s'assurer que le mot de passe respecte les critères de sécurité (minimum 8 caractères, majuscule, minuscule, chiffre). Un lien permet de rediriger vers la page de connexion pour les utilisateurs qui ont déjà un compte. Après inscription réussie, l'utilisateur est automatiquement connecté et redirigé vers la page de liste des documents.
+
+**Page liste des documents (/documents) :**
+
+La page liste des documents est la page principale de l'application après authentification. Elle contient un header avec le logo Alfred et un menu utilisateur permettant de se déconnecter. La zone principale affiche la liste des documents sous forme de cartes, chacune affichant le titre, le style d'écriture, le nombre de mots, et la date de dernière modification. Un bouton permet de créer un nouveau document. Un formulaire permet de créer un document en saisissant le titre et en sélectionnant un style d'écriture. Chaque carte de document est cliquable et redirige vers la page d'édition du document correspondant.
+
+**Page édition de document (/documents/[id]) :**
+
+La page d'édition de document est la page de travail principale de l'application. Elle contient un header avec le logo et le menu utilisateur. La zone principale est divisée en deux parties : la zone d'édition à gauche (ou en haut sur mobile) et le panel d'analyse IA à droite (ou en bas sur mobile). La zone d'édition contient l'éditeur de texte avec sauvegarde automatique. Le panel d'analyse IA permet de lancer des analyses (syntaxe, style, progression narrative) et d'afficher les résultats. Un onglet ou une section permet d'accéder au chat avec l'assistant IA. Un bouton de retour permet de revenir à la liste des documents.
+
+**Sections communes :**
+
+Toutes les pages de l'application partagent certaines sections communes. Le header contient le logo Alfred qui sert également de lien vers la page d'accueil. Le menu utilisateur permet d'accéder au profil et de se déconnecter. Un indicateur de sauvegarde automatique est visible sur la page d'édition pour rassurer l'utilisateur.
+
+**Formulaires :**
+
+L'application contient plusieurs formulaires : le formulaire de connexion (email, mot de passe), le formulaire d'inscription (email, mot de passe, confirmation), le formulaire de création de document (titre, style d'écriture), et le formulaire de chat avec l'assistant IA (message texte). Tous les formulaires incluent une validation côté client et serveur, avec des messages d'erreur clairs.
+
+**Pop-up et modales :**
+
+Des modales de confirmation sont utilisées pour les actions destructives, notamment la suppression d'un document. Ces modales demandent une confirmation explicite de l'utilisateur avant d'exécuter l'action.
+
+**Chat :**
+
+Le chat avec l'assistant IA est intégré dans la page d'édition de document. Il s'affiche dans le panel d'analyse IA et permet à l'utilisateur de converser avec l'assistant pour obtenir des conseils personnalisés basés sur le contenu du document en cours d'édition.
+
+**Moteur de recherche :**
+
+Un moteur de recherche interne permet de rechercher dans les titres des documents. Il est accessible depuis la page de liste des documents et permet de filtrer rapidement les documents par titre.
+
+**Liens :**
+
+Les liens de navigation permettent de naviguer entre les différentes pages de l'application. Des liens de retour sont présents sur les pages secondaires pour revenir à la page précédente. Le logo sert de lien vers la page d'accueil depuis toutes les pages. Aucun lien vers des canaux de communication externes (email, téléphone) ou vers les réseaux sociaux n'est présent dans cette version de l'application.
+
+**FAQ et mentions légales :**
+
+Les pages FAQ et mentions légales ne sont pas encore implémentées dans la Phase 1. Elles pourront être ajoutées dans les phases futures selon les besoins identifiés.
+
+**Aide en ligne :**
+
+L'aide en ligne est fournie via des tooltips contextuels et des messages d'aide dans les formulaires. Un système d'aide plus complet pourra être ajouté dans les phases futures.
+
+**Enchaînement des pages :**
+
+Le parcours utilisateur principal suit cette séquence : page d'accueil → page de connexion ou d'inscription → page de liste des documents → page d'édition d'un document. Depuis la page d'édition, l'utilisateur peut revenir à la liste des documents via le bouton de retour. L'utilisateur peut se déconnecter depuis n'importe quelle page de l'application, ce qui le redirige vers la page de connexion.
+
+**Spécificités par support :**
+
+**Version Desktop :**
+
+Sur desktop, l'interface utilise un layout en deux colonnes pour la page d'édition : la zone d'édition à gauche occupe environ 60% de la largeur, et le panel d'analyse IA à droite occupe environ 40% de la largeur. Le header est fixe en haut de la page. La liste des documents est affichée en grille de 3 colonnes. Tous les éléments sont facilement accessibles et visibles simultanément.
+
+**Version Tablette :**
+
+Sur tablette, le layout s'adapte avec une grille de 2 colonnes pour la liste des documents. Sur la page d'édition, le panel d'analyse IA devient un drawer qui peut être ouvert ou fermé via un bouton. Le header reste fixe mais s'adapte à la taille de l'écran. Les boutons sont suffisamment grands pour être utilisés au toucher.
+
+**Version Mobile :**
+
+Sur mobile, l'interface utilise un layout vertical empilé. La liste des documents est affichée en liste verticale. Sur la page d'édition, la zone d'édition occupe tout l'écran, et le panel d'analyse IA est accessible via un bouton qui ouvre une modal plein écran. Le header contient un menu hamburger pour accéder au menu utilisateur. Les formulaires sont optimisés pour la saisie tactile avec des champs de taille appropriée.
+
 ---
 
 **Document rédigé le :** Janvier 2025
+
+---
+
+### 5.7. Fonctionnalités détaillées les plus significatives
+
+Cette section décrit les fonctionnalités principales du point de vue **utilisateur** (ce que la fonctionnalité fait), complétées par des diagrammes (activité et séquence) et par la description des données et règles d’affichage associées.
+
+#### 5.7.1. Accéder à l’espace authentifié (inscription / connexion / déconnexion)
+
+##### Description
+
+L’utilisateur peut créer un compte ou se connecter pour accéder à son espace privé (documents, livres, analyses IA). Une fois authentifié, il reste connecté jusqu’à ce qu’il se déconnecte. L’application empêche l’accès aux écrans privés si l’utilisateur n’est pas authentifié.
+
+##### Diagramme d’activité
+
+Voir `docs/diagramme-activite-auth.puml`.
+
+##### Diagramme de séquence
+
+Voir `docs/diagramme-sequence-auth.puml`.
+
+##### Données / actions
+
+| En entrée | Traitement | En sortie | Contrôles |
+|---|---|---|---|
+| Email (`email`) | Validation du format, création de compte ou vérification des identifiants | Utilisateur authentifié (`user`) | Email valide (Zod), email unique (inscription) |
+| Mot de passe (`password`) | Vérification des règles (inscription) et comparaison sécurisée (connexion) | Jeton d’accès (`token`) | Longueur min. (inscription), mot de passe requis (connexion) |
+| Action demandée (connexion/inscription) | Application du rate limiting pour limiter brute force/spam | Redirection vers `/documents` | Rate limit auth : 5 requêtes / 15 minutes |
+
+**Dictionnaire de données (extrait)**
+
+| Name | Code | Type | Longueur | Sémantique | Valeurs / limites |
+|---|---|---|---|---|---|
+| Email | `email` | Texte | 254 (référence) | Identifiant de connexion | Doit respecter un format email |
+| Mot de passe | `password` | Texte | 8 à 128 (référence) | Secret utilisateur | \(\ge\) 8 caractères |
+| Jeton JWT | `token` | Texte | n/a | Preuve d’authentification | Envoyé via `Authorization: Bearer <token>` |
+
+##### Écran / affichage
+
+- **Écrans concernés** : `/login`, `/register`, zone privée (`/documents`, `/books`, `/documents/[id]`, `/books/[id]`).
+- **Règles d’affichage** :
+  - Les champs email/mot de passe affichent des messages d’erreur en cas de saisie invalide.
+  - Le bouton de soumission est désactivé pendant l’envoi (état “chargement”).
+  - En cas d’échec (identifiants invalides, rate limit, erreur serveur), un message explicite est affiché.
+  - Si l’utilisateur est déjà authentifié, il est redirigé automatiquement vers `/documents`.
+
+---
+
+#### 5.7.2. Gérer ses documents (liste, création, édition, suppression, réorganisation)
+
+##### Description
+
+L’utilisateur peut consulter la liste de ses documents, créer un nouveau document, ouvrir un document pour l’éditer, supprimer un document et réorganiser l’ordre d’affichage. Depuis la page d’édition, l’utilisateur peut modifier le contenu ; la sauvegarde est effectuée automatiquement afin d’éviter la perte de travail.
+
+##### Diagramme d’activité
+
+Voir `docs/diagramme-activite-documents.puml`.
+
+##### Diagramme de séquence
+
+Voir `docs/diagramme-sequence-documents.puml`.
+
+##### Données / actions
+
+| En entrée | Traitement | En sortie | Contrôles |
+|---|---|---|---|
+| Jeton JWT (`Authorization`) | Authentification et contrôle d’accès | Liste des documents | Token requis et valide |
+| Titre (`title`) | Création / mise à jour du titre | Document créé ou mis à jour | Requis à la création, longueur max 200 caractères |
+| Contenu (`content`) | Calcul/maintien du nombre de mots, version, date MAJ | Contenu sauvegardé | Requis à la création, optionnel à la mise à jour |
+| Style (`styleId`) | Association à un style d’écriture | Style rattaché au document | `styleId` requis, style existant |
+| Ordre (`documentIds[]`) | Réorganisation des documents | Ordre enregistré | Liste non vide, IDs valides |
+| Identifiant document (`id`) | Chargement / suppression | Document affiché ou supprimé | 404 si inexistant, 403 si non propriétaire |
+
+**Dictionnaire de données (extrait)**
+
+| Name | Code | Type | Longueur | Sémantique | Valeurs / limites |
+|---|---|---|---|---|---|
+| Identifiant document | `id` | Texte | UUID | Identifiant unique | Non vide |
+| Titre | `title` | Texte | 200 (référence) | Titre visible par l’utilisateur | Non vide à la création |
+| Contenu | `content` | Texte | n/a | Texte du document | Non vide à la création |
+| Style d’écriture | `styleId` | Texte | UUID | Référence vers un style | Doit exister (réf. `/api/styles`) |
+| Ordre d’affichage | `sortOrder` | Numérique | n/a | Position dans la liste | Géré par le système |
+
+##### Écran / affichage
+
+- **Écrans concernés** : `/documents` (liste + création), `/documents/[id]` (édition).
+- **Éléments UI** :
+  - Bouton “Nouveau document”, formulaire (titre, style), cartes de documents, action “supprimer”.
+  - Drag & drop pour réorganiser les documents (avec rollback visuel en cas d’échec).
+- **Règles d’affichage** :
+  - Affichage d’un état de chargement lors de la récupération des données.
+  - Affichage d’un message “aucun document” si la liste est vide.
+  - Confirmation pour les actions destructives (suppression).
+  - Indicateur de sauvegarde automatique sur la page d’édition.
+
+---
+
+#### 5.7.3. Analyser un document avec l’assistant IA (syntaxe, style, progression)
+
+##### Description
+
+Depuis la page d’édition, l’utilisateur peut lancer une analyse IA sur le document en cours. Selon le type d’analyse choisi, l’application renvoie des suggestions actionnables (corrections, recommandations de style, propositions de progression narrative) qui aident l’utilisateur à améliorer son texte.
+
+##### Diagramme d’activité
+
+Voir `docs/diagramme-activite-analyse-ia.puml`.
+
+##### Diagramme de séquence
+
+Voir `docs/diagramme-sequence-analyse-ia.puml`.
+
+##### Données / actions
+
+| En entrée | Traitement | En sortie | Contrôles |
+|---|---|---|---|
+| Jeton JWT (`Authorization`) | Authentification + vérification propriétaire du document | Résultat d’analyse | Token requis et valide |
+| Identifiant document (`documentId`) | Chargement du document à analyser | Suggestions (`suggestions[]`) | Document existant, 403 si non propriétaire |
+| Type d’analyse (`analysisType`) | Exécution de l’analyse via le module IA | Score de confiance (`confidence`) | Enum : `syntax`, `style`, `progression` |
+| Demande d’analyse | Application d’un rate limiting spécifique IA | Métadonnées (`processingTime`, `timestamp`) | Rate limit IA : 10 requêtes / minute |
+
+**Dictionnaire de données (extrait)**
+
+| Name | Code | Type | Longueur | Sémantique | Valeurs / limites |
+|---|---|---|---|---|---|
+| Identifiant document | `documentId` | Texte | UUID | Document à analyser | Non vide |
+| Type d’analyse | `analysisType` | Enum | n/a | Mode d’analyse IA | `syntax` \| `style` \| `progression` |
+| Suggestions | `suggestions` | Liste de textes | n/a | Recommandations IA | Peut être vide si aucune suggestion |
+| Confiance | `confidence` | Numérique | 0..1 | Qualité estimée du résultat | \([0,1]\) |
+
+##### Écran / affichage
+
+- **Écran concerné** : `/documents/[id]`.
+- **Éléments UI** : boutons de lancement d’analyse (syntaxe, style, progression), zone d’affichage des résultats, message d’erreur si échec.
+- **Règles d’affichage** :
+  - Un état “en cours” est affiché pendant l’analyse.
+  - Les résultats sont présentés sous forme de liste de suggestions lisibles.
+  - En cas d’atteinte du rate limit, l’utilisateur est informé et invité à réessayer plus tard.
+
+---
+
+#### 5.7.4. Gérer ses livres (création, liste, consultation, suppression, réorganisation)
+
+##### Description
+
+L’utilisateur peut créer des livres pour regrouper ses documents sous forme de chapitres. Il peut consulter la liste de ses livres, réorganiser l’ordre des livres, supprimer un livre, et consulter un livre pour voir les chapitres qu’il contient.
+
+##### Diagramme d’activité
+
+Voir `docs/diagramme-activite-livres.puml`.
+
+##### Diagramme de séquence
+
+Voir `docs/diagramme-sequence-livres.puml`.
+
+##### Données / actions
+
+| En entrée | Traitement | En sortie | Contrôles |
+|---|---|---|---|
+| Jeton JWT (`Authorization`) | Authentification + filtrage par utilisateur | Liste des livres | Token requis et valide |
+| Titre (`title`) | Création/mise à jour d’un livre | Livre créé/mis à jour | Titre requis |
+| Description (`description`) | Enregistrement d’une description optionnelle | Détail du livre | Peut être `null` |
+| Identifiant livre (`id`) | Chargement / suppression | Livre consulté ou supprimé | 404 si inexistant, 403 si non propriétaire |
+| Ordre (`bookIds[]`) | Réorganisation des livres | Ordre enregistré | Liste non vide, IDs valides |
+
+**Dictionnaire de données (extrait)**
+
+| Name | Code | Type | Longueur | Sémantique | Valeurs / limites |
+|---|---|---|---|---|---|
+| Identifiant livre | `id` | Texte | UUID | Identifiant unique | Non vide |
+| Titre du livre | `title` | Texte | n/a | Nom visible | Non vide |
+| Description | `description` | Texte | n/a | Complément optionnel | `null` autorisé |
+| Ordre d’affichage | `sortOrder` | Numérique | n/a | Position du livre | Géré par le système |
+| Nombre de chapitres | `chapterCount` | Numérique | n/a | Documents rattachés | Calculé |
+
+##### Écran / affichage
+
+- **Écrans concernés** : `/books`, `/books/[id]`, section “livres” sur `/documents`.
+- **Règles d’affichage** :
+  - Affichage d’un état de chargement lors du chargement de la liste.
+  - Affichage d’un message “aucun livre” si la liste est vide.
+  - Réorganisation par drag & drop (avec rollback visuel en cas d’échec).
+  - Suppression avec confirmation et message explicite sur l’impact : les chapitres ne sont pas supprimés, ils sont retirés du livre.
+
+---
+
+#### 5.7.5. Classer un document dans un livre (et réorganiser les chapitres)
+
+##### Description
+
+L’utilisateur peut affecter un document à un livre afin d’en faire un chapitre. Il peut aussi retirer un document d’un livre. Une fois dans un livre, l’utilisateur peut réordonner les chapitres pour structurer l’histoire. Ces actions permettent d’organiser un projet d’écriture à partir de documents existants.
+
+##### Diagramme d’activité
+
+Voir `docs/diagramme-activite-classement-document-livre.puml`.
+
+##### Diagramme de séquence
+
+Voir `docs/diagramme-sequence-classement-document-livre.puml`.
+
+##### Données / actions
+
+| En entrée | Traitement | En sortie | Contrôles |
+|---|---|---|---|
+| Identifiant document (`documentId`) | Rattachement au livre / détachement | Document déplacé | Document existant, propriétaire vérifié |
+| Identifiant livre (`bookId`) ou `null` | Affectation à un livre ou retrait | Chapitre mis à jour | Si `bookId` non nul : livre existant et accessible |
+| Ordre de chapitre (`chapterOrder`) | Mise à jour de l’ordre dans le livre | Chapitres réordonnés | Valeur numérique ou `null` lors du retrait |
+| Jeton JWT (`Authorization`) | Authentification | Message de succès | Token requis et valide |
+
+**Dictionnaire de données (extrait)**
+
+| Name | Code | Type | Longueur | Sémantique | Valeurs / limites |
+|---|---|---|---|---|---|
+| Identifiant livre | `bookId` | Texte / null | UUID | Cible de classement | `null` = retirer du livre |
+| Ordre du chapitre | `chapterOrder` | Numérique / null | n/a | Position du chapitre | \( \ge 0 \) (référence) |
+
+##### Écran / affichage
+
+- **Écrans concernés** : `/documents` (drag & drop vers un livre + zone de retrait), `/books/[id]` (liste des chapitres + réorganisation).
+- **Règles d’affichage** :
+  - Les livres apparaissent comme zones de dépôt (“drop zones”) pour classer un document.
+  - Une zone “retirer du livre” est affichée lorsqu’au moins un document est classé.
+  - Lors du drag & drop, l’ordre est mis à jour et persisté ; en cas d’échec, l’ordre précédent est restauré visuellement.

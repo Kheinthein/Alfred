@@ -19,7 +19,9 @@ export class Document {
     public version: number,
     public readonly createdAt: Date,
     public updatedAt: Date,
-    public sortOrder: number = 0
+    public sortOrder: number = 0,
+    public bookId: string | null = null,
+    public chapterOrder: number | null = null
   ) {}
 
   /**
@@ -66,5 +68,23 @@ export class Document {
    */
   updateSortOrder(order: number): void {
     this.sortOrder = order;
+  }
+
+  /**
+   * Assigne le document à un livre (chapitre)
+   */
+  assignToBook(bookId: string | null, chapterOrder: number | null): void {
+    this.bookId = bookId;
+    this.chapterOrder = chapterOrder;
+    this.updatedAt = new Date();
+  }
+
+  /**
+   * Retire le document d'un livre
+   */
+  removeFromBook(): void {
+    this.bookId = null;
+    this.chapterOrder = null;
+    this.updatedAt = new Date();
   }
 }

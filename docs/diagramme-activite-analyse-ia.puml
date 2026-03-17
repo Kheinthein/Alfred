@@ -1,0 +1,32 @@
+@startuml
+title Alfred — Diagramme d’activité — Analyse IA d’un document
+
+start
+
+:Ouvrir "/documents/[id]";
+:Afficher le panneau d’assistance IA;
+
+:Choisir un type d’analyse\n(syntaxe / style / progression);
+:Lancer l’analyse;
+
+if (Rate limit dépassé ?) then (oui)
+  :Afficher un message\n"Trop de requêtes";
+  stop
+endif
+
+if (Document inaccessible ?) then (oui)
+  :Afficher une erreur\n(accès interdit / introuvable);
+  stop
+endif
+
+:Exécuter l’analyse IA;
+
+if (Échec IA / fournisseur indisponible ?) then (oui)
+  :Afficher une erreur\net proposer de réessayer;
+  stop
+endif
+
+:Afficher les suggestions\n(et la confiance);
+
+stop
+@enduml

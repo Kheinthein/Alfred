@@ -15,7 +15,11 @@ describe('GetUserDocuments Use Case', () => {
     mockDocumentRepository = {
       findById: jest.fn(),
       findByUserId: jest.fn(),
+      findDeletedByUserId: jest.fn(),
+      findByIdIncludeDeleted: jest.fn(),
       save: jest.fn(),
+      softDelete: jest.fn(),
+      restore: jest.fn(),
       delete: jest.fn(),
       countByUserId: jest.fn(),
       updateSortOrders: jest.fn(),
@@ -54,24 +58,22 @@ describe('GetUserDocuments Use Case', () => {
 
       mockDocumentRepository.findByUserId.mockResolvedValue(docs);
 
-      const result = await getUserDocuments.execute({
-        userId: 'user-123',
-      });
+      const result = await getUserDocuments.execute({ userId: 'user-123' });
 
       expect(result.documents).toHaveLength(2);
-      expect(result.documents[0].title).toBe('Document 2');
-      expect(result.documents[1].title).toBe('Document 1');
+      // Le tri est désormais délégué au repository (DB), l'ordre reflète celui retourné par le mock
+      expect(result.documents[0].title).toBe('Document 1');
+      expect(result.documents[1].title).toBe('Document 2');
       expect(mockDocumentRepository.findByUserId).toHaveBeenCalledWith(
-        'user-123'
+        'user-123',
+        expect.objectContaining({ search: undefined, tagId: undefined })
       );
     });
 
     it('devrait retourner un tableau vide si aucun document', async () => {
       mockDocumentRepository.findByUserId.mockResolvedValue([]);
 
-      const result = await getUserDocuments.execute({
-        userId: 'user-123',
-      });
+      const result = await getUserDocuments.execute({ userId: 'user-123' });
 
       expect(result.documents).toHaveLength(0);
     });
@@ -92,14 +94,36 @@ describe('GetUserDocuments Use Case', () => {
 
       mockDocumentRepository.findByUserId.mockResolvedValue(userDocs);
 
-      const result = await getUserDocuments.execute({
-        userId: 'user-123',
-      });
+      const result = await getUserDocuments.execute({ userId: 'user-123' });
 
       expect(result.documents).toHaveLength(1);
       result.documents.forEach((doc) => {
         expect(doc.userId).toBe('user-123');
       });
+    });
+
+    it('devrait passer les options de tri et filtre au repository', async () => {
+      mockDocumentRepository.findByUserId.mockResolvedValue([]);
+
+      await getUserDocuments.execute({
+        userId: 'user-123',
+        search: 'roman',
+        tagId: 'tag-1',
+        styleId: 'style-1',
+        sortField: 'title',
+        sortOrder: 'asc',
+      });
+
+      expect(mockDocumentRepository.findByUserId).toHaveBeenCalledWith(
+        'user-123',
+        expect.objectContaining({
+          search: 'roman',
+          tagId: 'tag-1',
+          styleId: 'style-1',
+          sortField: 'title',
+          sortOrder: 'asc',
+        })
+      );
     });
   });
 });

@@ -1,0 +1,26 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+title Alfred — Cas d'utilisation (niveau système — accès public)
+
+actor "Visiteur" as Visitor
+
+rectangle "Alfred (Accès public)" {
+  usecase "Consulter page d'accueil" as UC_Home
+  usecase "Consulter CGU/CGV\n& mentions légales" as UC_Legal
+  usecase "Consulter docs API" as UC_ApiDocs
+  usecase "Consulter styles\nd'écriture" as UC_Styles
+  usecase "S'inscrire" as UC_Register
+  usecase "Se connecter" as UC_Login
+}
+
+Visitor --> UC_Home
+Visitor --> UC_Legal
+Visitor --> UC_ApiDocs
+Visitor --> UC_Styles
+Visitor --> UC_Register
+Visitor --> UC_Login
+@enduml
+

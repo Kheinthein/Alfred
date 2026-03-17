@@ -1,6 +1,6 @@
 import { AuthForm } from '@components/AuthForm';
-import { render, waitFor } from '@testing-library/react';
 import { fireEvent, screen } from '@testing-library/dom';
+import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockLogin = jest.fn();
@@ -41,7 +41,7 @@ describe('AuthForm', () => {
     expect(mockLogin).not.toHaveBeenCalled();
   });
 
-  it('appelle login et redirige après succès', async () => {
+  it('appelle login après succès', async () => {
     mockLogin.mockResolvedValue({
       token: 'token',
       user: { id: '1', email: 'test@example.com' },
@@ -62,8 +62,8 @@ describe('AuthForm', () => {
         email: 'test@example.com',
         password: 'SecurePass123',
       });
-      expect(mockPush).toHaveBeenCalledWith('/documents');
     });
+    // La redirection vers /documents est gérée par AuthLayout (hors scope AuthForm)
   });
 
   it('appelle register en mode création de compte', async () => {
@@ -87,7 +87,7 @@ describe('AuthForm', () => {
         email: 'new@example.com',
         password: 'SecurePass123',
       });
-      expect(mockPush).toHaveBeenCalledWith('/documents');
     });
+    // La redirection vers /documents est gérée par AuthLayout (hors scope AuthForm)
   });
 });

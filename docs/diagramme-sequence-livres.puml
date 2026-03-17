@@ -1,0 +1,41 @@
+@startuml
+title Alfred — Diagramme de séquence — Livres (liste, création, ordre, consultation)
+
+actor "Utilisateur" as U
+boundary "UI Web" as UI
+control "API Books" as API
+database "Base de données" as DB
+
+== Charger la liste ==
+U -> UI : Ouvrir "/books"
+UI -> API : GET /api/books\nAuthorization: Bearer ...
+API -> DB : Lire books (par userId)\ntriés par sortOrder
+DB --> API : books[]
+API --> UI : { books[] }
+UI --> U : Afficher la liste
+
+== Créer un livre ==
+U -> UI : Saisir titre/description\nCliquer "Créer"
+UI -> API : POST /api/books\n{ title, description? }
+API -> DB : Créer book (userId)
+DB --> API : book{id,...}
+API --> UI : 201 { book }
+UI --> U : Mettre à jour la liste
+
+== Réorganiser ==
+U -> UI : Drag & drop (liste)
+UI -> API : PUT /api/books/reorder\n{ bookIds[] }
+API -> DB : Mettre à jour sortOrder
+DB --> API : ok
+API --> UI : { message }
+UI --> U : Ordre affiché mis à jour
+
+== Consulter un livre ==
+U -> UI : Ouvrir un livre
+UI -> API : GET /api/books/[id]
+API -> DB : Lire book + documents (chapitres)\n(vérifier userId)
+DB --> API : book + chapters[]
+API --> UI : { book, chapters[] }
+UI --> U : Afficher les chapitres
+
+@enduml

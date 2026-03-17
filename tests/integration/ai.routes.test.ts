@@ -5,7 +5,6 @@ import { POST as RegisterRoute } from '@/app/api/auth/register/route';
 import { POST as DocumentsPostRoute } from '@/app/api/documents/route';
 import { container } from '@/container';
 import { IAIServicePort } from '@modules/ai-assistant/domain/repositories/IAIServicePort';
-import './setupDb';
 import { getAnyStyleId } from './setupDb';
 import { createJsonRequest, parseJson, uniqueEmail } from './utils';
 

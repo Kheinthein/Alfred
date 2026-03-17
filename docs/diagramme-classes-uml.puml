@@ -1,0 +1,413 @@
+@startuml Diagramme de Classes UML Détaillé - Alfred
+!theme plain
+skinparam linetype ortho
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam class {
+    BackgroundColor<<Entity>> #E3F2FD
+    BackgroundColor<<ValueObject>> #FFF3E0
+    BackgroundColor<<Repository>> #E8F5E9
+    BackgroundColor<<UseCase>> #F3E5F5
+    BorderColor #1976D2
+    ArrowColor #424242
+}
+
+' ============================================
+' ENTITIES
+' ============================================
+package "Domain - Entities" <<Folder>> {
+    
+    class User <<Entity>> {
+        --
+        -id: string {readonly}
+        -email: string
+        -name: string | null
+        -passwordHash: string
+        -createdAt: Date {readonly}
+        -updatedAt: Date
+        -deletedAt: Date | null
+        --
+        +validate(): void
+        +comparePassword(password: string): Promise<boolean>
+    }
+    
+    class Document <<Entity>> {
+        --
+        -id: string {readonly}
+        -userId: string {readonly}
+        -title: string
+        -content: DocumentContent
+        -style: WritingStyle
+        -version: number
+        -createdAt: Date {readonly}
+        -updatedAt: Date
+        -deletedAt: Date | null
+        -sortOrder: number
+        -bookId: string | null
+        -chapterOrder: number | null
+        --
+        +updateContent(newContent: DocumentContent): void
+        +needsAIAnalysis(): boolean
+        +validate(): void
+        +updateSortOrder(order: number): void
+        +assignToBook(bookId: string | null, chapterOrder: number | null): void
+        +removeFromBook(): void
+        +softDelete(): void
+        +restore(): void
+    }
+    
+    class Book <<Entity>> {
+        --
+        -id: string {readonly}
+        -userId: string {readonly}
+        -title: string
+        -description: string | null
+        -sortOrder: number
+        -createdAt: Date {readonly}
+        -updatedAt: Date
+        --
+        +updateTitle(newTitle: string): void
+        +updateDescription(newDescription: string | null): void
+        +updateSortOrder(order: number): void
+        +validate(): void
+    }
+    
+    class WritingStyle <<Entity>> {
+        --
+        -id: string {readonly}
+        -name: string
+        -description: string
+        --
+        +validate(): void
+    }
+    
+    class AIAnalysis <<Entity>> {
+        --
+        -id: string {readonly}
+        -documentId: string {readonly}
+        -type: AnalysisType {readonly}
+        -suggestions: string[] {readonly}
+        -confidence: number {readonly}
+        -createdAt: Date {readonly}
+        -metadata?: Record<string, unknown> {readonly}
+        --
+        +validate(): void
+        +isHighConfidence(): boolean
+    }
+    
+    class ChatConversation <<Entity>> {
+        --
+        -id: string {readonly}
+        -documentId: string {readonly}
+        -userId: string {readonly}
+        -createdAt: Date {readonly}
+        -updatedAt: Date
+        --
+        +validate(): void
+        +belongsToDocument(documentId: string): boolean
+        +belongsToUser(userId: string): boolean
+    }
+    
+    class ChatMessage <<Entity>> {
+        --
+        -id: string {readonly}
+        -conversationId: string {readonly}
+        -role: string {readonly}  // "user" | "assistant"
+        -content: string {readonly}
+        -createdAt: Date {readonly}
+        --
+        +validate(): void
+        +isUserMessage(): boolean
+        +isAssistantMessage(): boolean
+    }
+    
+    class Tag <<Entity>> {
+        --
+        -id: string {readonly}
+        -name: string
+        -color: string | null
+        -userId: string | null {readonly}
+        -createdAt: Date {readonly}
+        --
+        +validate(): void
+        +isSystemTag(): boolean
+    }
+    
+    class DocumentTag <<Entity>> {
+        --
+        -id: string {readonly}
+        -documentId: string {readonly}
+        -tagId: string {readonly}
+        --
+        +validate(): void
+    }
+    
+    class DocumentVersion <<Entity>> {
+        --
+        -id: string {readonly}
+        -documentId: string {readonly}
+        -version: number {readonly}
+        -title: string {readonly}
+        -content: string {readonly}
+        -wordCount: number {readonly}
+        -createdAt: Date {readonly}
+        --
+        +validate(): void
+        +restore(): Document
+    }
+    
+    class DocumentTemplate <<Entity>> {
+        --
+        -id: string {readonly}
+        -name: string
+        -description: string | null
+        -content: string
+        -styleId: string {readonly}
+        -isPublic: boolean
+        -userId: string | null {readonly}
+        -createdAt: Date {readonly}
+        -updatedAt: Date
+        --
+        +validate(): void
+        +isSystemTemplate(): boolean
+        +applyTo(document: Document): void
+    }
+}
+
+' ============================================
+' VALUE OBJECTS
+' ============================================
+package "Domain - Value Objects" <<Folder>> {
+    
+    class Email <<ValueObject>> {
+        --
+        -value: string {readonly}
+        --
+        +equals(other: Email): boolean
+        +toString(): string
+        -isValid(email: string): boolean
+    }
+    
+    class DocumentContent <<ValueObject>> {
+        --
+        -text: string {readonly}
+        -wordCount: number {readonly}
+        --
+        +get characterCount(): number
+        +isEmpty(): boolean
+        +toString(): string
+        -calculateWordCount(text: string): number
+    }
+}
+
+' ============================================
+' REPOSITORIES (Interfaces)
+' ============================================
+package "Domain - Repositories" <<Folder>> {
+    
+    interface IUserRepository <<Repository>> {
+        --
+        +findById(id: string): Promise<User | null>
+        +findByEmail(email: string): Promise<User | null>
+        +save(user: User): Promise<void>
+        +delete(id: string): Promise<void>
+        +emailExists(email: string): Promise<boolean>
+    }
+    
+    interface IDocumentRepository <<Repository>> {
+        --
+        +findById(id: string): Promise<Document | null>
+        +findByUserId(userId: string, options?: DocumentQueryOptions): Promise<Document[]>
+        +findDeletedByUserId(userId: string): Promise<Document[]>
+        +findByIdIncludeDeleted(id: string): Promise<Document | null>
+        +save(document: Document): Promise<void>
+        +softDelete(id: string): Promise<void>
+        +restore(id: string): Promise<void>
+        +delete(id: string): Promise<void>
+        +countByUserId(userId: string): Promise<number>
+        +updateSortOrders(userId: string, orders: Array<{id: string, sortOrder: number}>): Promise<void>
+    }
+
+    interface IDocumentVersionRepository <<Repository>> {
+        --
+        +save(version: DocumentVersionDTO): Promise<void>
+        +findByDocumentId(documentId: string): Promise<DocumentVersionDTO[]>
+        +findByVersion(documentId: string, version: number): Promise<DocumentVersionDTO | null>
+        +findLatest(documentId: string): Promise<DocumentVersionDTO | null>
+    }
+    
+    interface IBookRepository <<Repository>> {
+        --
+        +findById(id: string): Promise<Book | null>
+        +findByUserId(userId: string): Promise<Book[]>
+        +save(book: Book): Promise<void>
+        +delete(id: string): Promise<void>
+        +updateSortOrders(userId: string, orders: Array<{id: string, sortOrder: number}>): Promise<void>
+    }
+    
+    interface IAIAnalysisRepository <<Repository>> {
+        --
+        +findByDocumentId(documentId: string): Promise<AIAnalysis[]>
+        +findCachedAnalysis(documentId: string, type: string, contentHash: string): Promise<AIAnalysis | null>
+        +save(analysis: AIAnalysis): Promise<void>
+    }
+    
+    interface IAIServicePort <<Repository>> {
+        --
+        +analyzeText(text: string, type: AnalysisType): Promise<AIAnalysis>
+    }
+}
+
+' ============================================
+' USE CASES
+' ============================================
+package "Domain - Use Cases" <<Folder>> {
+    
+    class CreateUser <<UseCase>> {
+        --
+        -userRepository: IUserRepository
+        --
+        +execute(input: CreateUserInput): Promise<CreateUserOutput>
+        -generateId(): string
+    }
+    
+    class AuthenticateUser <<UseCase>> {
+        --
+        -userRepository: IUserRepository
+        --
+        +execute(input: LoginDTO): Promise<AuthenticateUserOutput>
+    }
+    
+    class CreateDocument <<UseCase>> {
+        --
+        -documentRepository: IDocumentRepository
+        --
+        +execute(input: CreateDocumentInput): Promise<CreateDocumentOutput>
+        -generateId(): string
+    }
+    
+    class UpdateDocument <<UseCase>> {
+        --
+        -documentRepository: IDocumentRepository
+        -versionRepository: IDocumentVersionRepository
+        --
+        +execute(input: UpdateDocumentInput): Promise<UpdateDocumentOutput>
+    }
+    
+    class DeleteDocument <<UseCase>> {
+        --
+        -documentRepository: IDocumentRepository
+        --
+        +execute(input: DeleteDocumentInput): Promise<void>
+    }
+    
+    class GetUserDocuments <<UseCase>> {
+        --
+        -documentRepository: IDocumentRepository
+        --
+        +execute(input: GetUserDocumentsInput): Promise<GetUserDocumentsOutput>
+    }
+    
+    class ReorderDocuments <<UseCase>> {
+        --
+        -documentRepository: IDocumentRepository
+        --
+        +execute(input: ReorderDocumentsInput): Promise<void>
+    }
+    
+    class MoveDocumentToBook <<UseCase>> {
+        --
+        -documentRepository: IDocumentRepository
+        --
+        +execute(input: MoveDocumentToBookInput): Promise<void>
+    }
+    
+    class CreateBook <<UseCase>> {
+        --
+        -bookRepository: IBookRepository
+        --
+        +execute(input: CreateBookInput): Promise<CreateBookOutput>
+    }
+    
+    class UpdateBook <<UseCase>> {
+        --
+        -bookRepository: IBookRepository
+        --
+        +execute(input: UpdateBookInput): Promise<UpdateBookOutput>
+    }
+    
+    class DeleteBook <<UseCase>> {
+        --
+        -bookRepository: IBookRepository
+        --
+        +execute(input: DeleteBookInput): Promise<void>
+    }
+    
+    class ReorderBooks <<UseCase>> {
+        --
+        -bookRepository: IBookRepository
+        --
+        +execute(input: ReorderBooksInput): Promise<void>
+    }
+    
+    class AnalyzeText <<UseCase>> {
+        --
+        -aiService: IAIServicePort
+        -analysisRepository: IAIAnalysisRepository
+        --
+        +execute(input: AnalyzeTextInput): Promise<AnalyzeTextOutput>
+        -hashContent(content: string): string
+    }
+}
+
+' ============================================
+' RELATIONS ENTITIES
+' ============================================
+Document *-- DocumentContent : contient
+Document --> WritingStyle : utilise
+Document --> User : appartient à
+Document --> Book : peut appartenir à
+Book --> User : appartient à
+AIAnalysis --> Document : analyse
+Document "1" -- "*" ChatConversation : a
+User "1" -- "*" ChatConversation : possède
+ChatConversation "1" -- "*" ChatMessage : contient
+Document "1" -- "*" DocumentTag : est tagué
+Tag "1" -- "*" DocumentTag : est associé à
+Document "1" -- "*" DocumentVersion : a des versions
+Document "0..1" -- "*" DocumentTemplate : utilise
+WritingStyle "1" -- "*" DocumentTemplate : utilisé par
+
+' ============================================
+' RELATIONS USE CASES -> REPOSITORIES
+' ============================================
+CreateUser ..> IUserRepository : utilise
+AuthenticateUser ..> IUserRepository : utilise
+
+CreateDocument ..> IDocumentRepository : utilise
+UpdateDocument ..> IDocumentRepository : utilise
+UpdateDocument ..> IDocumentVersionRepository : utilise
+DeleteDocument ..> IDocumentRepository : utilise
+GetUserDocuments ..> IDocumentRepository : utilise
+ReorderDocuments ..> IDocumentRepository : utilise
+MoveDocumentToBook ..> IDocumentRepository : utilise
+
+CreateBook ..> IBookRepository : utilise
+UpdateBook ..> IBookRepository : utilise
+DeleteBook ..> IBookRepository : utilise
+ReorderBooks ..> IBookRepository : utilise
+
+AnalyzeText ..> IAIServicePort : utilise
+AnalyzeText ..> IAIAnalysisRepository : utilise
+
+' ============================================
+' RELATIONS USE CASES -> ENTITIES
+' ============================================
+CreateUser ..> User : crée
+CreateUser ..> Email : utilise
+CreateDocument ..> Document : crée
+CreateDocument ..> DocumentContent : crée
+CreateBook ..> Book : crée
+AnalyzeText ..> AIAnalysis : crée
+
+@enduml

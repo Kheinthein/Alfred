@@ -1,0 +1,30 @@
+@startuml
+title Alfred — Diagramme de séquence — Analyse IA
+
+actor "Utilisateur" as U
+boundary "UI Web (éditeur)" as UI
+control "API IA (/api/ai/analyze)" as API
+control "Service IA (module interne)" as SVC
+database "Base de données" as DB
+control "Service IA externe" as EXT
+
+U -> UI : Cliquer "Analyser"\n(type = syntax/style/progression)
+UI -> API : POST /api/ai/analyze\n{ documentId, analysisType }\nAuthorization: Bearer ...
+
+API -> API : Contrôle rate limit IA\n(10/minute)
+alt rate limit exceeded
+  API --> UI : 429 { error: RATE_LIMIT_EXCEEDED }
+  UI --> U : Afficher le message d'attente
+else success
+  API -> API : Authentifier le token (JWT)
+  API -> SVC : Demander l'analyse\n(documentId, analysisType, userId)
+  SVC -> DB : Charger le document\n(vérifier propriétaire)
+  DB --> SVC : document{content,...}
+  SVC -> EXT : Appeler le fournisseur IA\navec le contenu
+  EXT --> SVC : suggestions + confiance
+  SVC --> API : Résultat d'analyse
+  API --> UI : 200 { analysis, meta }
+  UI --> U : Afficher suggestions + score
+end
+
+@enduml

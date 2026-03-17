@@ -2,17 +2,22 @@ import { DocumentCard } from '@components/DocumentCard';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DocumentDTO } from '@shared/types';
+import { ReactNode } from 'react';
 
 interface SortableDocumentCardProps {
   document: DocumentDTO;
   onDelete?: (id: string) => void;
   isDeleting?: boolean;
+  additionalActions?: ReactNode;
+  compact?: boolean;
 }
 
 export function SortableDocumentCard({
   document,
   onDelete,
   isDeleting,
+  additionalActions,
+  compact,
 }: SortableDocumentCardProps) {
   const {
     attributes,
@@ -38,6 +43,8 @@ export function SortableDocumentCard({
         isDeleting={isDeleting}
         dragHandleProps={{ ...attributes, ...listeners }}
         isDragging={isDragging}
+        additionalActions={additionalActions}
+        compact={compact}
       />
     </div>
   );

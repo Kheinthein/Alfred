@@ -1,0 +1,42 @@
+@startuml
+title Alfred — Diagramme d’activité — Accéder à l’espace authentifié
+
+start
+
+:Afficher l’écran\n"/login" ou "/register";
+
+if (Utilisateur déjà authentifié ?) then (oui)
+  :Rediriger vers "/documents";
+  stop
+endif
+
+:Saisir email + mot de passe;
+:Soumettre le formulaire;
+
+if (Saisie invalide ?) then (oui)
+  :Afficher les erreurs\n(champs invalides);
+  stop
+endif
+
+if (Mode = inscription ?) then (oui)
+  :Créer le compte utilisateur;
+else (non)
+  :Vérifier les identifiants;
+endif
+
+if (Échec d’authentification ?) then (oui)
+  :Afficher un message d’erreur;
+  stop
+endif
+
+:Retourner un jeton d’accès (JWT);
+:Enregistrer la session (localStorage);
+:Accéder à l’espace privé\n"/documents";
+
+if (Utilisateur se déconnecte ?) then (oui)
+  :Supprimer la session locale;
+  :Retourner à l’accès public;
+endif
+
+stop
+@enduml

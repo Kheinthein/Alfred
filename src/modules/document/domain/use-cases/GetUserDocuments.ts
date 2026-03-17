@@ -1,34 +1,40 @@
 import { Document } from '../entities/Document';
-import { IDocumentRepository } from '../repositories/IDocumentRepository';
+import {
+  DocumentQueryOptions,
+  DocumentSortField,
+  DocumentSortOrder,
+  IDocumentRepository,
+} from '../repositories/IDocumentRepository';
 
 export interface GetUserDocumentsInput {
   userId: string;
+  search?: string;
+  tagId?: string;
+  styleId?: string;
+  sortField?: DocumentSortField;
+  sortOrder?: DocumentSortOrder;
 }
 
 export interface GetUserDocumentsOutput {
   documents: Document[];
 }
 
-/**
- * Use Case : Récupérer tous les documents d'un utilisateur
- *
- * Responsabilités:
- * - Récupérer les documents via le repository
- * - Les retourner triés par date de mise à jour (le plus récent en premier)
- */
 export class GetUserDocuments {
   constructor(private readonly documentRepository: IDocumentRepository) {}
 
   async execute(input: GetUserDocumentsInput): Promise<GetUserDocumentsOutput> {
-    const documents = await this.documentRepository.findByUserId(input.userId);
+    const options: DocumentQueryOptions = {
+      search: input.search,
+      tagId: input.tagId,
+      styleId: input.styleId,
+      sortField: input.sortField,
+      sortOrder: input.sortOrder,
+    };
 
-    documents.sort((a, b) => {
-      if (a.sortOrder !== b.sortOrder) {
-        return a.sortOrder - b.sortOrder;
-      }
-      return b.updatedAt.getTime() - a.updatedAt.getTime();
-    });
-
+    const documents = await this.documentRepository.findByUserId(
+      input.userId,
+      options
+    );
     return { documents };
   }
 }

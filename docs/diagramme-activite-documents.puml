@@ -1,0 +1,56 @@
+@startuml
+title Alfred — Diagramme d’activité — Gérer ses documents
+
+start
+
+:Accéder à "/documents";
+:Afficher la liste des documents;
+
+if (Liste vide ?) then (oui)
+  :Afficher un message\n"Aucun document";
+endif
+
+if (Créer un document ?) then (oui)
+  :Saisir titre + style;
+  :Créer le document;
+  if (Création échoue ?) then (oui)
+    :Afficher l’erreur;
+    stop
+  endif
+  :Ouvrir le document créé\n"/documents/[id]";
+endif
+
+if (Ouvrir un document existant ?) then (oui)
+  :Naviguer vers "/documents/[id]";
+endif
+
+if (Réorganiser la liste ?) then (oui)
+  :Glisser-déposer un document;
+  :Enregistrer le nouvel ordre;
+  if (Échec enregistrement ?) then (oui)
+    :Restaurer l’ordre précédent;
+  endif
+endif
+
+if (Supprimer un document ?) then (oui)
+  :Afficher une confirmation;
+  if (Confirmation) then (oui)
+    :Supprimer le document;
+  else (non)
+    :Annuler;
+  endif
+endif
+
+partition "Édition (/documents/[id])" {
+  :Afficher l’éditeur + panneau IA;
+  :L’utilisateur modifie le texte;
+  :Sauvegarde automatique\n(après inactivité);
+  if (Sauvegarde échoue ?) then (oui)
+    :Afficher un état d’erreur\nou de non-sauvegarde;
+  else (non)
+    :Afficher un indicateur\n"enregistré";
+  endif
+}
+
+stop
+@enduml

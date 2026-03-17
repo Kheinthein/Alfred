@@ -1,0 +1,33 @@
+@startuml
+title Alfred — Diagramme de séquence — Connexion / Inscription
+
+actor "Utilisateur" as U
+boundary "UI Web (Next.js)" as UI
+control "API Auth (/api/auth/*)" as API
+database "Base de données" as DB
+
+U -> UI : Saisir email + mot de passe\nCliquer sur le bouton
+UI -> API : POST /api/auth/login ou /api/auth/register\n{ email, password }
+
+API -> API : Contrôles\n- Rate limit\n- Validation des champs
+
+alt Inscription
+  API -> DB : Créer l’utilisateur\n(email unique, mot de passe hashé)
+  DB --> API : user{id,email,createdAt}
+else Connexion
+  API -> DB : Charger l’utilisateur par email
+  DB --> API : user + hashMotDePasse
+  API -> API : Vérifier le mot de passe
+end
+
+alt Échec
+  API --> UI : 4xx/5xx\n{ success:false, error }
+  UI --> U : Afficher un message d’erreur
+else Succès
+  API -> API : Générer un JWT
+  API --> UI : 200/201\n{ success:true, data:{ user, token } }
+  UI -> UI : Stocker la session (localStorage)\nMettre à jour l’état auth
+  UI --> U : Redirection vers "/documents"
+end
+
+@enduml

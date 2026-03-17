@@ -21,6 +21,7 @@ interface AuthContextState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (payload: LoginPayload) => Promise<AuthResponse>;
   register: (payload: RegisterPayload) => Promise<AuthResponse>;
   logout: () => void;
@@ -37,6 +38,7 @@ const STORAGE_KEY = 'alfred:auth';
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const raw =
@@ -44,10 +46,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ? window.localStorage.getItem(STORAGE_KEY)
         : null;
     if (raw) {
-      const parsed = JSON.parse(raw) as AuthResponse;
-      setUser(parsed.user);
-      setToken(parsed.token);
+      try {
+        const parsed = JSON.parse(raw) as AuthResponse;
+        setUser(parsed.user);
+        setToken(parsed.token);
+      } catch {
+        // Si le parsing échoue, on supprime le token invalide
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem(STORAGE_KEY);
+        }
+      }
     }
+    setIsLoading(false);
   }, []);
 
   const persist = useCallback((data: AuthResponse | null) => {
@@ -96,11 +106,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       token,
       isAuthenticated: Boolean(user && token),
+      isLoading,
       login,
       register,
       logout,
     }),
-    [login, logout, register, token, user]
+    [isLoading, login, logout, register, token, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

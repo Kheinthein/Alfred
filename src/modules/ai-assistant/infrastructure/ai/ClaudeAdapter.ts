@@ -1,9 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import {
+  AIChatMessage,
   IAIServicePort,
-  SyntaxAnalysisResult,
-  StyleAnalysisResult,
   ProgressionSuggestionResult,
+  StyleAnalysisResult,
+  SyntaxAnalysisResult,
 } from '@modules/ai-assistant/domain/repositories/IAIServicePort';
 import { WritingStyle } from '@modules/document/domain/entities/WritingStyle';
 
@@ -130,6 +131,36 @@ Retourne UNIQUEMENT un objet JSON avec cette structure exacte:
       throw new Error('Réponse inattendue de Claude');
     }
 
+    return content.text.trim();
+  }
+
+  async chat(
+    messages: AIChatMessage[],
+    documentContext: string
+  ): Promise<string> {
+    const systemPrompt = `Tu es Alfred, un assistant littéraire expert et bienveillant. Tu aides les écrivains à améliorer leur texte.
+Tu as accès au document en cours que l'utilisateur est en train d'écrire. Base tes réponses sur ce contenu pour donner des conseils personnalisés et pertinents.
+
+Document en cours :
+---
+${documentContext.substring(0, 3000)}
+---
+
+Réponds en français, de façon concise et utile.`;
+
+    const response = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
+    });
+
+    const content = response.content[0];
+    if (content.type !== 'text')
+      throw new Error('Réponse inattendue de Claude');
     return content.text.trim();
   }
 

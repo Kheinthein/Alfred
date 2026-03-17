@@ -12,15 +12,35 @@ datasource db {
 model User {
   id           String              @id @default(cuid())
   email        String              @unique
+  name         String?             // Nom d'affichage optionnel
   passwordHash String
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
+  deletedAt    DateTime?           // Soft delete RGPD
   documents    Document[]
+  books        Book[]
   conversations ChatConversation[]
   tags         Tag[]
   templates    DocumentTemplate[]
 
+  @@index([email])
   @@map("users")
+}
+
+model Book {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  sortOrder   BigInt     @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  documents   Document[]
+
+  @@index([userId])
+  @@index([userId, sortOrder])
+  @@map("books")
 }
 
 model WritingStyle {
@@ -45,6 +65,10 @@ model Document {
   style        WritingStyle       @relation(fields: [styleId], references: [id])
   version      Int                @default(1)
   sortOrder    BigInt             @default(0)
+  bookId       String?
+  book         Book?              @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  chapterOrder Int?
+  deletedAt    DateTime?          // Soft delete (§5.5.3 du cahier des charges)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   analyses     AIAnalysis[]
@@ -55,6 +79,10 @@ model Document {
   @@index([userId])
   @@index([styleId])
   @@index([userId, sortOrder])
+  @@index([bookId])
+  @@index([bookId, chapterOrder])
+  @@index([deletedAt])
+  @@index([userId, deletedAt])
   @@map("documents")
 }
 
@@ -174,4 +202,3 @@ model DocumentTemplate {
   @@index([isPublic])
   @@map("document_templates")
 }
-

@@ -4,9 +4,6 @@ const nextConfig = {
   // swcMinify est activé par défaut dans Next.js 16
   output: 'standalone', // Enable standalone output for Docker
   serverExternalPackages: ['@prisma/client', 'bcryptjs'],
-  turbopack: {
-    // Configuration Turbopack vide pour Next.js 16
-  },
   // S'assurer que les variables d'environnement sont chargées
   env: {
     DATABASE_URL: process.env.DATABASE_URL,

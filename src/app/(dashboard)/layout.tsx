@@ -1,7 +1,8 @@
 'use client';
 
 import { useAuth } from '@shared/providers/AuthProvider';
-import { Menu, X } from 'lucide-react';
+import { BookOpen, FileText, Menu, User, X } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 
@@ -12,15 +13,25 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({
   children,
 }: DashboardLayoutProps): React.ReactElement | null {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Attendre que le chargement de l'authentification soit terminé avant de rediriger
+    if (!isLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isLoading, router]);
+
+  // Afficher un loader pendant le chargement de l'authentification
+  if (isLoading) {
+    return (
+      <div className="font-interface flex min-h-screen items-center justify-center">
+        <p className="font-writing text-neutral-textSecondary">Chargement...</p>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;
@@ -38,29 +49,46 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="border-b border-gray-200 bg-white">
+    <div className="font-interface min-h-screen flex flex-col">
+      <header className="border-b border-neutral-border/50 bg-neutral-bgSecondary/80 backdrop-blur-sm">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             {/* Mobile: Logo/User info */}
             <div className="flex-1">
-              <p className="text-xs text-gray-500 sm:text-sm">Bienvenue</p>
-              <p className="text-sm font-semibold text-gray-900 sm:text-base">
+              <p className="text-xs text-neutral-textSecondary sm:text-sm">
+                Bienvenue
+              </p>
+              <p className="text-sm font-semibold text-neutral-text sm:text-base">
                 {user?.email}
               </p>
             </div>
 
             {/* Desktop: Navigation buttons */}
-            <div className="hidden items-center gap-3 md:flex">
-              <button
-                onClick={() => router.push('/documents')}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            <div className="hidden items-center gap-2 md:flex">
+              <Link
+                href="/documents"
+                className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-neutral-textSecondary transition-all hover:bg-neutral-bg hover:text-parchment-text"
               >
-                Mes documents
-              </button>
+                <FileText size={15} />
+                Documents
+              </Link>
+              <Link
+                href="/books"
+                className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-neutral-textSecondary transition-all hover:bg-neutral-bg hover:text-parchment-text"
+              >
+                <BookOpen size={15} />
+                Livres
+              </Link>
+              <Link
+                href="/profile"
+                className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-neutral-textSecondary transition-all hover:bg-neutral-bg hover:text-parchment-text"
+              >
+                <User size={15} />
+                Profil
+              </Link>
               <button
                 onClick={handleLogout}
-                className="rounded-md border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                className="rounded-md border border-neutral-border px-4 py-2 text-sm font-semibold text-neutral-text transition-colors hover:bg-neutral-bg focus:outline-none focus:ring-2 focus:ring-neutral-border focus:ring-offset-2"
               >
                 Déconnexion
               </button>
@@ -70,7 +98,7 @@ export default function DashboardLayout({
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="ml-4 rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 md:hidden"
+              className="ml-4 rounded-md p-2 text-neutral-text transition-colors hover:bg-neutral-bg focus:outline-none focus:ring-2 focus:ring-ai-primary md:hidden"
               aria-label="Menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -84,17 +112,32 @@ export default function DashboardLayout({
 
           {/* Mobile: Dropdown menu */}
           {mobileMenuOpen && (
-            <div className="mt-4 border-t border-gray-200 pt-4 md:hidden">
+            <div className="mt-4 border-t border-neutral-border pt-4 md:hidden">
               <nav className="flex flex-col gap-2">
                 <button
                   onClick={() => handleNavigate('/documents')}
-                  className="rounded-md bg-blue-600 px-4 py-3 text-left text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex items-center gap-2 rounded-md bg-ai-primary px-4 py-3 text-left text-sm font-semibold text-white transition-colors hover:bg-ai-primary/90"
                 >
+                  <FileText size={15} />
                   Mes documents
                 </button>
                 <button
+                  onClick={() => handleNavigate('/books')}
+                  className="flex items-center gap-2 rounded-md border border-neutral-border px-4 py-3 text-left text-sm font-medium text-neutral-text transition-colors hover:bg-neutral-bg"
+                >
+                  <BookOpen size={15} />
+                  Mes livres
+                </button>
+                <button
+                  onClick={() => handleNavigate('/profile')}
+                  className="flex items-center gap-2 rounded-md border border-neutral-border px-4 py-3 text-left text-sm font-medium text-neutral-text transition-colors hover:bg-neutral-bg"
+                >
+                  <User size={15} />
+                  Mon profil
+                </button>
+                <button
                   onClick={handleLogout}
-                  className="rounded-md border border-gray-200 px-4 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="rounded-md border border-neutral-border px-4 py-3 text-left text-sm font-semibold text-neutral-text transition-colors hover:bg-neutral-bg"
                 >
                   Déconnexion
                 </button>
@@ -104,7 +147,7 @@ export default function DashboardLayout({
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="flex-1 mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
     </div>

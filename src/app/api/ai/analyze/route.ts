@@ -6,6 +6,7 @@ import { authenticateRequest } from '@/app/api/middleware/auth';
 import { handleError } from '@/app/api/middleware/errorHandler';
 import {
   rateLimitMiddleware,
+  rateLimitByUser,
   RATE_LIMIT_CONFIGS,
 } from '@/app/api/middleware/rateLimit';
 import { logger } from '@shared/infrastructure/logger/WinstonLogger';
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const startTime = performance.now();
 
   try {
-    // 1. Vérifier le rate limit (strict pour IA)
+    // 1. Rate limit par IP (brute-force avant auth)
     const rateLimitResponse = rateLimitMiddleware(
       request,
       RATE_LIMIT_CONFIGS.ai
@@ -29,11 +30,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 2. Authentifier
     const { userId } = authenticateRequest(request);
 
-    // 3. Parser et valider le body
+    // 3. Rate limit par userId : 10 analyses/minute (cahier des charges §2.7.2)
+    if (
+      process.env.NODE_ENV !== 'development' &&
+      process.env.NODE_ENV !== 'test'
+    ) {
+      const { allowed, retryAfter } = rateLimitByUser(
+        userId,
+        RATE_LIMIT_CONFIGS.ai
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'RATE_LIMIT_EXCEEDED',
+              message:
+                'Limite de 10 analyses par minute atteinte. Veuillez patienter.',
+              retryAfter,
+            },
+          },
+          { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+        );
+      }
+    }
+
+    // 4. Parser et valider le body
     const body: unknown = await request.json();
     const data = AnalyzeTextDTOSchema.parse(body);
 
-    // 4. Analyser le document
+    // 5. Analyser le document
     const analyzeText = container.get<AnalyzeText>(AnalyzeText);
     const result = await analyzeText.execute({
       documentId: data.documentId,
@@ -41,7 +67,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       analysisType: data.analysisType,
     });
 
-    // 5. Logger l'analyse
+    // 6. Logger l'analyse
     const duration = performance.now() - startTime;
     logger.info({
       action: 'ai.analyze',
@@ -52,7 +78,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       duration,
     });
 
-    // 6. Retourner la réponse
+    // 7. Retourner la réponse
     return NextResponse.json({
       success: true,
       data: {
@@ -71,9 +97,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     const duration = performance.now() - startTime;
+
+    // Log détaillé de l'erreur
+    console.error('❌ Erreur analyse IA:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      error: error,
+    });
+
     logger.error({
       action: 'ai.analyze.error',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
       duration,
     });
 

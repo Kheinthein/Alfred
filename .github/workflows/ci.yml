@@ -50,8 +50,8 @@ jobs:
         env:
           DATABASE_URL: file:./test.db
           JWT_SECRET: test-secret
-          AI_PROVIDER: openai
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-fake-key' }}
+          AI_PROVIDER: gemini
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'fake-gemini-key' }}
           NODE_ENV: test
 
       - name: 🏗️ Build project
@@ -59,8 +59,8 @@ jobs:
         env:
           DATABASE_URL: file:./test.db
           JWT_SECRET: test-secret
-          AI_PROVIDER: openai
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-fake-key' }}
+          AI_PROVIDER: gemini
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'fake-gemini-key' }}
 
       - name: 📊 Upload coverage
         uses: codecov/codecov-action@v3
@@ -115,8 +115,8 @@ jobs:
         env:
           DATABASE_URL: file:./dev.db
           JWT_SECRET: test-secret-e2e
-          AI_PROVIDER: openai
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-fake-key' }}
+          AI_PROVIDER: gemini
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || 'fake-gemini-key' }}
           CI: true
           NODE_ENV: test
         # Timeout de 15 minutes pour les tests E2E

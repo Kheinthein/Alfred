@@ -31,23 +31,27 @@ setInterval(() => {
 }, 60000); // Nettoyage toutes les minutes
 
 /**
- * Extrait l'identifiant du client (IP ou userId)
+ * Extrait l'identifiant du client (IP uniquement — pour le rate limit par userId,
+ * utiliser rateLimitByUser() après authentification)
  */
 function getClientIdentifier(request: NextRequest): string {
-  // Priorité 1: User ID si authentifié
-  const authHeader = request.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    // On utilise le token comme identifiant (simplifié)
-    return `user:${token.substring(0, 20)}`;
-  }
-
-  // Priorité 2: IP du client
   const forwardedFor = request.headers.get('x-forwarded-for');
   const realIp = request.headers.get('x-real-ip');
-  const ip = forwardedFor?.split(',')[0] || realIp || 'unknown';
-
+  const ip = forwardedFor?.split(',')[0] ?? realIp ?? 'unknown';
   return `ip:${ip}`;
+}
+
+/**
+ * Rate limit par userId authentifié (plus précis que par IP)
+ */
+export function rateLimitByUser(
+  userId: string,
+  config: RateLimitConfig
+): { allowed: boolean; retryAfter: number } {
+  const identifier = `user:${userId}`;
+  const { allowed, resetTime } = checkRateLimit(identifier, config);
+  const retryAfter = allowed ? 0 : Math.ceil((resetTime - Date.now()) / 1000);
+  return { allowed, retryAfter };
 }
 
 /**

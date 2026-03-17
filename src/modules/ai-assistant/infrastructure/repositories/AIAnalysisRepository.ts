@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import { IAIAnalysisRepository } from '@modules/ai-assistant/domain/repositories/IAIAnalysisRepository';
 import { AIAnalysis } from '@modules/ai-assistant/domain/entities/AIAnalysis';
+import { IAIAnalysisRepository } from '@modules/ai-assistant/domain/repositories/IAIAnalysisRepository';
+import { PrismaClient } from '@prisma/client';
 import { AnalysisType } from '@shared/types';
 
 /**
@@ -54,6 +54,34 @@ export class AIAnalysisRepository implements IAIAnalysisRepository {
     if (!analysis) return null;
 
     return this.toDomain(analysis);
+  }
+
+  async findCachedAnalysis(
+    documentId: string,
+    type: string,
+    contentHash: string
+  ): Promise<AIAnalysis | null> {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const analyses = await this.prisma.aIAnalysis.findMany({
+      where: {
+        documentId,
+        type,
+        createdAt: { gte: sevenDaysAgo },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Chercher une analyse avec le même hash de contenu
+    for (const a of analyses) {
+      if (!a.metadata) continue;
+      const meta = JSON.parse(a.metadata) as Record<string, unknown>;
+      if (meta.contentHash === contentHash) {
+        return this.toDomain(a);
+      }
+    }
+
+    return null;
   }
 
   async deleteByDocumentId(documentId: string): Promise<void> {

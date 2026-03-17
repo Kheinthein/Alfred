@@ -17,9 +17,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // 1. Authentifier
     const { userId } = authenticateRequest(request);
 
-    // 2. Récupérer les documents
+    // 2. Lire les filtres optionnels
+    const { searchParams } = request.nextUrl;
+    const search = searchParams.get('search') ?? undefined;
+    const tagId = searchParams.get('tagId') ?? undefined;
+    const styleId = searchParams.get('styleId') ?? undefined;
+    const sortField = (searchParams.get('sortField') ?? undefined) as
+      | import('@modules/document/domain/repositories/IDocumentRepository').DocumentSortField
+      | undefined;
+    const sortOrder = (searchParams.get('sortOrder') ?? undefined) as
+      | import('@modules/document/domain/repositories/IDocumentRepository').DocumentSortOrder
+      | undefined;
+
+    // 3. Récupérer les documents
     const getUserDocuments = container.get<GetUserDocuments>(GetUserDocuments);
-    const result = await getUserDocuments.execute({ userId });
+    const result = await getUserDocuments.execute({
+      userId,
+      search,
+      tagId,
+      styleId,
+      sortField,
+      sortOrder,
+    });
 
     // 3. Retourner la réponse
     return NextResponse.json({
@@ -57,7 +76,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 2. Parser et valider le body
     const body: unknown = await request.json();
+    console.log('📝 Body reçu pour création document:', body);
+
     const data = CreateDocumentDTOSchema.parse(body);
+    console.log('✅ Validation passée:', data);
 
     // 3. Récupérer le style
     const styleData = await prisma.writingStyle.findUnique({

@@ -4,8 +4,12 @@ import 'reflect-metadata';
 // Repositories
 import { IAIAnalysisRepository } from '@modules/ai-assistant/domain/repositories/IAIAnalysisRepository';
 import { AIAnalysisRepository } from '@modules/ai-assistant/infrastructure/repositories/AIAnalysisRepository';
+import { IBookRepository } from '@modules/book/domain/repositories/IBookRepository';
+import { BookRepository } from '@modules/book/infrastructure/repositories/BookRepository';
 import { IDocumentRepository } from '@modules/document/domain/repositories/IDocumentRepository';
+import { IDocumentVersionRepository } from '@modules/document/domain/repositories/IDocumentVersionRepository';
 import { DocumentRepository } from '@modules/document/infrastructure/repositories/DocumentRepository';
+import { DocumentVersionRepository } from '@modules/document/infrastructure/repositories/DocumentVersionRepository';
 import { IUserRepository } from '@modules/user/domain/repositories/IUserRepository';
 import { UserRepository } from '@modules/user/infrastructure/repositories/UserRepository';
 
@@ -21,8 +25,15 @@ import { CreateUser } from '@modules/user/domain/use-cases/CreateUser';
 import { CreateDocument } from '@modules/document/domain/use-cases/CreateDocument';
 import { DeleteDocument } from '@modules/document/domain/use-cases/DeleteDocument';
 import { GetUserDocuments } from '@modules/document/domain/use-cases/GetUserDocuments';
+import { MoveDocumentToBook } from '@modules/document/domain/use-cases/MoveDocumentToBook';
 import { ReorderDocuments } from '@modules/document/domain/use-cases/ReorderDocuments';
 import { UpdateDocument } from '@modules/document/domain/use-cases/UpdateDocument';
+
+// Use Cases - Book
+import { CreateBook } from '@modules/book/domain/use-cases/CreateBook';
+import { DeleteBook } from '@modules/book/domain/use-cases/DeleteBook';
+import { ReorderBooks } from '@modules/book/domain/use-cases/ReorderBooks';
+import { UpdateBook } from '@modules/book/domain/use-cases/UpdateBook';
 
 // Use Cases - AI
 import { AnalyzeText } from '@modules/ai-assistant/domain/use-cases/AnalyzeText';
@@ -57,10 +68,47 @@ container
   .toDynamicValue(() => new AIAnalysisRepository(prisma))
   .inSingletonScope();
 
+container
+  .bind<IDocumentVersionRepository>('IDocumentVersionRepository')
+  .toDynamicValue(() => new DocumentVersionRepository(prisma))
+  .inSingletonScope();
+
+container
+  .bind<IBookRepository>('IBookRepository')
+  .toDynamicValue(() => new BookRepository(prisma))
+  .inSingletonScope();
+
 // Bind AI Service (créé depuis la factory selon env)
+// Lazy loading : créé uniquement quand réellement utilisé
 container
   .bind<IAIServicePort>('IAIServicePort')
-  .toDynamicValue(() => AIAdapterFactory.createFromEnv())
+  .toDynamicValue(() => {
+    try {
+      console.log('🔧 Création du service IA...');
+      console.log('   AI_PROVIDER:', process.env.AI_PROVIDER);
+      console.log('   GEMINI_MODEL:', process.env.GEMINI_MODEL);
+      console.log('   GEMINI_API_KEY présent:', !!process.env.GEMINI_API_KEY);
+
+      const service = AIAdapterFactory.createFromEnv();
+      console.log('✅ Service IA créé avec succès');
+      return service;
+    } catch (error) {
+      console.error('❌ Erreur lors de la création du service IA:');
+      console.error(
+        '   Message:',
+        error instanceof Error ? error.message : String(error)
+      );
+      console.error(
+        '   Stack:',
+        error instanceof Error ? error.stack : undefined
+      );
+      console.error('💡 Vérifiez que :');
+      console.error('   - npm install a été exécuté');
+      console.error('   - AI_PROVIDER est défini dans .env');
+      console.error('   - La clé API correspondante est définie');
+      throw error;
+    }
+  })
   .inSingletonScope();
 
 // Bind Use Cases - User
@@ -97,7 +145,10 @@ container
     const docRepo = context.container.get<IDocumentRepository>(
       'IDocumentRepository'
     );
-    return new UpdateDocument(docRepo);
+    const versionRepo = context.container.get<IDocumentVersionRepository>(
+      'IDocumentVersionRepository'
+    );
+    return new UpdateDocument(docRepo, versionRepo);
   })
   .inTransientScope();
 
@@ -128,6 +179,50 @@ container
       'IDocumentRepository'
     );
     return new ReorderDocuments(docRepo);
+  })
+  .inTransientScope();
+
+container
+  .bind<MoveDocumentToBook>(MoveDocumentToBook)
+  .toDynamicValue((context) => {
+    const docRepo = context.container.get<IDocumentRepository>(
+      'IDocumentRepository'
+    );
+    const bookRepo = context.container.get<IBookRepository>('IBookRepository');
+    return new MoveDocumentToBook(docRepo, bookRepo);
+  })
+  .inTransientScope();
+
+// Bind Use Cases - Book
+container
+  .bind<CreateBook>(CreateBook)
+  .toDynamicValue((context) => {
+    const bookRepo = context.container.get<IBookRepository>('IBookRepository');
+    return new CreateBook(bookRepo);
+  })
+  .inTransientScope();
+
+container
+  .bind<UpdateBook>(UpdateBook)
+  .toDynamicValue((context) => {
+    const bookRepo = context.container.get<IBookRepository>('IBookRepository');
+    return new UpdateBook(bookRepo);
+  })
+  .inTransientScope();
+
+container
+  .bind<DeleteBook>(DeleteBook)
+  .toDynamicValue((context) => {
+    const bookRepo = context.container.get<IBookRepository>('IBookRepository');
+    return new DeleteBook(bookRepo);
+  })
+  .inTransientScope();
+
+container
+  .bind<ReorderBooks>(ReorderBooks)
+  .toDynamicValue((context) => {
+    const bookRepo = context.container.get<IBookRepository>('IBookRepository');
+    return new ReorderBooks(bookRepo);
   })
   .inTransientScope();
 

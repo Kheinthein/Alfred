@@ -1,6 +1,7 @@
 'use client';
 
 import { DocumentEditor } from '@components/DocumentEditor';
+import { ExportButton } from '@components/ExportButton';
 import { documentService } from '@shared/services/documentService';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -17,17 +18,24 @@ export default function DocumentDetailPage() {
   });
 
   if (isLoading || !document) {
-    return <p className="text-gray-500">Chargement du document...</p>;
+    return (
+      <p className="font-writing text-neutral-textSecondary">
+        Chargement du document...
+      </p>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/app/documents"
-        className="text-sm font-medium text-blue-600 hover:underline"
-      >
-        ← Retour aux documents
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          href="/documents"
+          className="font-interface text-sm font-medium text-action-link transition-colors hover:underline"
+        >
+          ← Retour aux documents
+        </Link>
+        <ExportButton document={document} />
+      </div>
 
       <DocumentEditor document={document} />
     </div>

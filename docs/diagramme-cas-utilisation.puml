@@ -1,0 +1,78 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+title Alfred — Cas d'utilisation (niveau abstrait / métier)
+
+actor "Visiteur" as Visitor
+actor "Utilisateur\n(authentifié)" as User
+actor "Service IA externe\n(Gemini)" as AI
+
+User --|> Visitor
+
+rectangle "Alfred (Web + API)" {
+
+  package "Accès public" {
+    usecase "Consulter page d'accueil" as UC_Home
+    usecase "Consulter CGU/CGV\n& mentions légales" as UC_Legal
+    usecase "Consulter styles\nd'écriture" as UC_Styles
+    usecase "S'inscrire" as UC_Register
+    usecase "Se connecter" as UC_Login
+  }
+
+  package "Documents" {
+    usecase "Gérer documents" as UC_Docs
+    note right of UC_Docs
+      Détails dans :
+      docs/diagramme-cas-utilisation-auth.puml
+    end note
+  }
+
+  package "Livres" {
+    usecase "Gérer livres" as UC_Books
+    note right of UC_Books
+      Détails dans :
+      docs/diagramme-cas-utilisation-auth.puml
+    end note
+  }
+
+  package "Assistant IA" {
+    usecase "Analyser document\navec IA" as UC_AI
+    note right of UC_AI
+      Détails dans :
+      docs/diagramme-cas-utilisation-auth.puml
+    end note
+  }
+
+  package "Profil & Compte" {
+    usecase "Gérer son profil" as UC_Profile
+    note right of UC_Profile
+      Détails dans :
+      docs/diagramme-cas-utilisation-auth.puml
+    end note
+  }
+
+  package "Statistiques" {
+    usecase "Consulter statistiques\nd'écriture" as UC_Stats
+  }
+
+  usecase "Se déconnecter" as UC_Logout
+}
+
+Visitor --> UC_Home
+Visitor --> UC_Legal
+Visitor --> UC_Styles
+Visitor --> UC_Register
+Visitor --> UC_Login
+
+User --> UC_Docs
+User --> UC_Books
+User --> UC_AI
+User --> UC_Profile
+User --> UC_Stats
+User --> UC_Logout
+
+AI <-- UC_AI
+@enduml
+

@@ -23,6 +23,15 @@ export interface IAIAnalysisRepository {
   ): Promise<AIAnalysis | null>;
 
   /**
+   * Cherche une analyse mise en cache (même hash de contenu, < 7 jours)
+   */
+  findCachedAnalysis(
+    documentId: string,
+    type: string,
+    contentHash: string
+  ): Promise<AIAnalysis | null>;
+
+  /**
    * Supprime toutes les analyses d'un document
    */
   deleteByDocumentId(documentId: string): Promise<void>;

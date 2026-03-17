@@ -6,8 +6,7 @@ import {
   GET as DocumentsGetRoute,
   POST as DocumentsPostRoute,
 } from '@/app/api/documents/route';
-import { GET as StylesRoute } from '@/app/api/styles/route';
-import './setupDb';
+import { getAnyStyleId } from './setupDb';
 import { createJsonRequest, parseJson, uniqueEmail } from './utils';
 
 describe('Documents API Routes', () => {
@@ -26,12 +25,7 @@ describe('Documents API Routes', () => {
 
   it('crée un document et le retourne dans la liste', async () => {
     const { token } = await createAuthenticatedUser();
-    const stylesResponse = await StylesRoute();
-    const stylesBody = await parseJson<{
-      data: { styles: Array<{ id: string }> };
-    }>(stylesResponse);
-    const styleId = stylesBody.data.styles[0]?.id;
-    if (!styleId) throw new Error('No style available');
+    const styleId = await getAnyStyleId();
 
     const createResponse = await DocumentsPostRoute(
       createJsonRequest(
@@ -65,12 +59,7 @@ describe('Documents API Routes', () => {
 
   it('permet de réordonner les documents', async () => {
     const { token } = await createAuthenticatedUser();
-    const stylesResponse = await StylesRoute();
-    const stylesBody = await parseJson<{
-      data: { styles: Array<{ id: string }> };
-    }>(stylesResponse);
-    const styleId = stylesBody.data.styles[0]?.id;
-    if (!styleId) throw new Error('No style available');
+    const styleId = await getAnyStyleId();
 
     const createDocument = async (title: string): Promise<Response> =>
       DocumentsPostRoute(
@@ -118,12 +107,7 @@ describe('Documents API Routes', () => {
   });
 
   it('refuse la création sans jeton', async () => {
-    const stylesResponse = await StylesRoute();
-    const stylesBody = await parseJson<{
-      data: { styles: Array<{ id: string }> };
-    }>(stylesResponse);
-    const styleId = stylesBody.data.styles[0]?.id;
-    if (!styleId) throw new Error('No style available');
+    const styleId = await getAnyStyleId();
 
     const response = await DocumentsPostRoute(
       createJsonRequest('/api/documents', 'POST', {

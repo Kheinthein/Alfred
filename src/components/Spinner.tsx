@@ -11,7 +11,7 @@ const sizeMap: Record<Required<SpinnerProps>['size'], string> = {
 export function Spinner({ size = 'md' }: SpinnerProps) {
   return (
     <span
-      className={`inline-block animate-spin rounded-full border-solid border-blue-600 border-t-transparent ${sizeMap[size]}`}
+      className={`inline-block animate-spin rounded-full border-solid border-ai-primary border-t-transparent ${sizeMap[size]}`}
       role="status"
     >
       <span className="sr-only">Chargement...</span>

@@ -8,9 +8,9 @@ import { UpdateDocument } from '@modules/document/domain/use-cases/UpdateDocumen
 import { NextRequest, NextResponse } from 'next/server';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
@@ -25,11 +25,14 @@ export async function GET(
     // 1. Authentifier
     const { userId } = authenticateRequest(request);
 
-    // 2. Récupérer le document
+    // 2. Await params (Next.js 15 requirement)
+    const { id } = await params;
+
+    // 3. Récupérer le document
     const documentRepo = container.get<IDocumentRepository>(
       'IDocumentRepository'
     );
-    const document = await documentRepo.findById(params.id);
+    const document = await documentRepo.findById(id);
 
     if (!document) {
       return NextResponse.json(
@@ -96,14 +99,17 @@ export async function PUT(
     // 1. Authentifier
     const { userId } = authenticateRequest(request);
 
-    // 2. Parser et valider le body
+    // 2. Await params (Next.js 15 requirement)
+    const { id } = await params;
+
+    // 3. Parser et valider le body
     const body: unknown = await request.json();
     const data = UpdateDocumentDTOSchema.parse(body);
 
-    // 3. Mettre à jour le document
+    // 4. Mettre à jour le document
     const updateDocument = container.get<UpdateDocument>(UpdateDocument);
     const result = await updateDocument.execute({
-      documentId: params.id,
+      documentId: id,
       userId,
       title: data.title,
       content: data.content,
@@ -131,28 +137,114 @@ export async function PUT(
 
 /**
  * DELETE /api/documents/[id]
- * Supprime un document
+ * Suppression logique (soft delete) — le document va en corbeille
  */
 export async function DELETE(
   request: NextRequest,
   { params }: RouteParams
 ): Promise<NextResponse> {
   try {
-    // 1. Authentifier
     const { userId } = authenticateRequest(request);
+    const { id } = await params;
 
-    // 2. Supprimer le document
-    const deleteDocument = container.get<DeleteDocument>(DeleteDocument);
-    await deleteDocument.execute({
-      documentId: params.id,
-      userId,
-    });
+    const documentRepo = container.get<IDocumentRepository>(
+      'IDocumentRepository'
+    );
+    const document = await documentRepo.findById(id);
 
-    // 3. Retourner la réponse
+    if (!document) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'NOT_FOUND', message: 'Document non trouvé' },
+        },
+        { status: 404 }
+      );
+    }
+    if (document.userId !== userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'Accès non autorisé' },
+        },
+        { status: 403 }
+      );
+    }
+
+    await documentRepo.softDelete(id);
+
     return NextResponse.json({
       success: true,
-      message: 'Document supprimé avec succès',
+      data: { message: 'Document déplacé dans la corbeille' },
     });
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+/**
+ * PATCH /api/documents/[id]
+ * Actions spéciales : restore (corbeille → actif) ou purge (suppression définitive)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
+  try {
+    const { userId } = authenticateRequest(request);
+    const { id } = await params;
+    const body = (await request.json()) as { action: string };
+
+    const documentRepo = container.get<IDocumentRepository>(
+      'IDocumentRepository'
+    );
+
+    // Pour restore/purge on cherche aussi dans la corbeille
+    const doc = await documentRepo.findByIdIncludeDeleted(id);
+
+    if (!doc) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'NOT_FOUND', message: 'Document non trouvé' },
+        },
+        { status: 404 }
+      );
+    }
+    if (doc.userId !== userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'FORBIDDEN', message: 'Accès non autorisé' },
+        },
+        { status: 403 }
+      );
+    }
+
+    if (body.action === 'restore') {
+      await documentRepo.restore(id);
+      return NextResponse.json({
+        success: true,
+        data: { message: 'Document restauré' },
+      });
+    }
+
+    if (body.action === 'purge') {
+      const deleteDocument = container.get<DeleteDocument>(DeleteDocument);
+      await deleteDocument.execute({ documentId: id, userId });
+      return NextResponse.json({
+        success: true,
+        data: { message: 'Document supprimé définitivement' },
+      });
+    }
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'BAD_REQUEST', message: 'Action inconnue' },
+      },
+      { status: 400 }
+    );
   } catch (error) {
     return handleError(error);
   }

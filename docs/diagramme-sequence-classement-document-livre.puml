@@ -1,0 +1,36 @@
+@startuml
+title Alfred — Diagramme de séquence — Classer / retirer / réordonner des chapitres
+
+actor "Utilisateur" as U
+boundary "UI Web" as UI
+control "API Documents\n(move-to-book)" as API
+database "Base de données" as DB
+
+== Classer (drag & drop vers un livre) ==
+U -> UI : Glisser un document\nsur un livre
+UI -> API : POST /api/documents/[id]/move-to-book\n{ bookId, chapterOrder }\nAuthorization: Bearer ...
+API -> API : Authentifier + valider body
+API -> DB : Mettre à jour le document\n(bookId, chapterOrder)
+DB --> API : ok
+API --> UI : 200 { message }
+UI --> U : Document classé dans le livre
+
+== Retirer d’un livre ==
+U -> UI : Glisser sur "retirer"\nou cliquer "Retirer"
+UI -> API : POST /api/documents/[id]/move-to-book\n{ bookId: null, chapterOrder: null }
+API -> DB : Mettre à jour le document\n(bookId=null, chapterOrder=null)
+DB --> API : ok
+API --> UI : 200 { message }
+UI --> U : Document retiré du livre
+
+== Réordonner les chapitres (dans /books/[id]) ==
+U -> UI : Drag & drop (chapitres)
+loop Pour chaque chapitre (dans le nouvel ordre)
+  UI -> API : POST /api/documents/[chapterId]/move-to-book\n{ bookId, chapterOrder:index }
+  API -> DB : Mettre à jour chapterOrder
+  DB --> API : ok
+  API --> UI : 200
+end
+UI --> U : Ordre des chapitres mis à jour
+
+@enduml

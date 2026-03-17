@@ -1,6 +1,9 @@
 import { Document } from '@modules/document/domain/entities/Document';
 import { WritingStyle } from '@modules/document/domain/entities/WritingStyle';
-import { IDocumentRepository } from '@modules/document/domain/repositories/IDocumentRepository';
+import {
+  DocumentQueryOptions,
+  IDocumentRepository,
+} from '@modules/document/domain/repositories/IDocumentRepository';
 import { DocumentContent } from '@modules/document/domain/value-objects/DocumentContent';
 import { PrismaClient } from '@prisma/client';
 
@@ -12,7 +15,7 @@ export class DocumentRepository implements IDocumentRepository {
 
   async findById(id: string): Promise<Document | null> {
     const doc = await this.prisma.document.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: { style: true },
     });
 
@@ -21,31 +24,77 @@ export class DocumentRepository implements IDocumentRepository {
     return this.toDomain(doc);
   }
 
-  async findByUserId(userId: string): Promise<Document[]> {
+  async findByUserId(
+    userId: string,
+    options: DocumentQueryOptions = {}
+  ): Promise<Document[]> {
+    const {
+      search,
+      tagId,
+      styleId,
+      sortField = 'updatedAt',
+      sortOrder = 'desc',
+    } = options;
+
+    // Construire l'orderBy dynamique
+    type PrismaOrderBy = Record<string, 'asc' | 'desc'>;
+    const sortableFields: Record<string, PrismaOrderBy> = {
+      updatedAt: { updatedAt: sortOrder },
+      createdAt: { createdAt: sortOrder },
+      title: { title: sortOrder },
+      wordCount: { wordCount: sortOrder },
+    };
+    const primaryOrder = sortableFields[sortField] ?? { updatedAt: 'desc' };
+    // Pour les tris autres que sortOrder manuel, on ignore le sortOrder de drag&drop
+    const orderBy: PrismaOrderBy[] =
+      sortField === 'updatedAt' || sortField === 'createdAt'
+        ? [{ sortOrder: 'asc' } as PrismaOrderBy, primaryOrder]
+        : [primaryOrder];
+
     const docs = await this.prisma.document.findMany({
-      where: { userId },
+      where: {
+        userId,
+        deletedAt: null,
+        ...(search ? { title: { contains: search } } : {}),
+        ...(tagId ? { tags: { some: { tagId } } } : {}),
+        ...(styleId ? { styleId } : {}),
+      },
       include: { style: true },
-      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
+      orderBy,
     });
 
-    return docs.map(
-      (doc: {
-        id: string;
-        userId: string;
-        title: string;
-        content: string;
-        wordCount: number;
-        version: number;
-        sortOrder: bigint;
-        createdAt: Date;
-        updatedAt: Date;
-        style: {
-          id: string;
-          name: string;
-          description: string;
-        };
-      }) => this.toDomain(doc)
-    );
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async findByIdIncludeDeleted(id: string): Promise<Document | null> {
+    const doc = await this.prisma.document.findUnique({
+      where: { id },
+      include: { style: true },
+    });
+    return doc ? this.toDomain(doc) : null;
+  }
+
+  async findDeletedByUserId(userId: string): Promise<Document[]> {
+    const docs = await this.prisma.document.findMany({
+      where: { userId, deletedAt: { not: null } },
+      include: { style: true },
+      orderBy: { deletedAt: 'desc' },
+    });
+    return docs.map((doc) => this.toDomain(doc));
+  }
+
+  async softDelete(id: string): Promise<void> {
+    await this.prisma.document.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  async restore(id: string): Promise<void> {
+    await this.prisma.document.update({
+      where: { id },
+      data: { deletedAt: null },
+    });
   }
 
   async save(document: Document): Promise<void> {
@@ -57,6 +106,8 @@ export class DocumentRepository implements IDocumentRepository {
         wordCount: document.content.wordCount,
         version: document.version,
         sortOrder: BigInt(document.sortOrder),
+        bookId: document.bookId,
+        chapterOrder: document.chapterOrder ?? null,
         updatedAt: document.updatedAt,
       },
       create: {
@@ -68,6 +119,8 @@ export class DocumentRepository implements IDocumentRepository {
         styleId: document.style.id,
         version: document.version,
         sortOrder: BigInt(document.sortOrder),
+        bookId: document.bookId,
+        chapterOrder: document.chapterOrder ?? null,
         createdAt: document.createdAt,
         updatedAt: document.updatedAt,
       },
@@ -111,6 +164,9 @@ export class DocumentRepository implements IDocumentRepository {
     wordCount: number;
     version: number;
     sortOrder: bigint;
+    bookId: string | null;
+    chapterOrder: number | null;
+    deletedAt?: Date | null;
     createdAt: Date;
     updatedAt: Date;
     style: {
@@ -135,7 +191,9 @@ export class DocumentRepository implements IDocumentRepository {
       data.version,
       data.createdAt,
       data.updatedAt,
-      Number(data.sortOrder)
+      Number(data.sortOrder),
+      data.bookId,
+      data.chapterOrder ?? null
     );
   }
 }

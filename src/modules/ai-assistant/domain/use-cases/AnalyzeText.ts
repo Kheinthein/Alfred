@@ -38,6 +38,17 @@ export class AnalyzeText {
     private readonly aiAnalysisRepository: IAIAnalysisRepository
   ) {}
 
+  /** Hash rapide du contenu pour identifier les analyses identiques */
+  private hashContent(content: string): string {
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Conversion en 32-bit integer
+    }
+    return Math.abs(hash).toString(36);
+  }
+
   async execute(input: AnalyzeTextInput): Promise<AnalyzeTextOutput> {
     // 1. Récupérer le document
     const document = await this.documentRepository.findById(input.documentId);
@@ -52,7 +63,22 @@ export class AnalyzeText {
       );
     }
 
-    // 3. Analyser selon le type demandé
+    // 3. Vérifier le cache (même contenu + même type < 7 jours)
+    const contentHash = this.hashContent(document.content.text);
+    const cached = await this.aiAnalysisRepository.findCachedAnalysis(
+      input.documentId,
+      input.analysisType,
+      contentHash
+    );
+    if (cached) {
+      return {
+        analysis: cached,
+        suggestions: cached.suggestions,
+        confidence: cached.confidence,
+      };
+    }
+
+    // 4. Analyser selon le type demandé
     let suggestions: string[];
     let confidence: number;
 
@@ -94,20 +120,21 @@ export class AnalyzeText {
       }
     }
 
-    // 4. Créer l'entité AIAnalysis
+    // 5. Créer l'entité AIAnalysis (avec hash pour le cache futur)
     const analysis = new AIAnalysis(
       this.generateId(),
       document.id,
       input.analysisType,
       suggestions,
       confidence,
-      new Date()
+      new Date(),
+      { contentHash }
     );
 
-    // 5. Valider l'analyse
+    // 6. Valider l'analyse
     analysis.validate();
 
-    // 6. Sauvegarder l'analyse pour historique
+    // 7. Sauvegarder l'analyse pour historique
     await this.aiAnalysisRepository.save(analysis);
 
     return {

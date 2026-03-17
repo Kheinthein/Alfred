@@ -1,7 +1,7 @@
 import { AIAnalysisPanel } from '@components/AIAnalysisPanel';
 import { AnalysisType } from '@shared/types';
-import { render } from '@testing-library/react';
 import { fireEvent, screen } from '@testing-library/dom';
+import { render } from '@testing-library/react';
 
 describe('AIAnalysisPanel', () => {
   it('affiche un état vide par défaut', () => {

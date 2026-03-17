@@ -1,6 +1,6 @@
 import { DocumentCard } from '@components/DocumentCard';
-import { render } from '@testing-library/react';
 import { fireEvent, screen } from '@testing-library/dom';
+import { render } from '@testing-library/react';
 
 jest.mock('next/link', () => ({
   __esModule: true,
@@ -30,7 +30,10 @@ describe('DocumentCard', () => {
     render(<DocumentCard document={documentMock} />);
 
     expect(screen.getByText('Mon roman')).toBeInTheDocument();
-    expect(screen.getByText(/Roman • 5 mots • version 2/)).toBeInTheDocument();
+    // Le style, le nombre de mots et la version sont dans des <span> séparés
+    expect(screen.getByText('Roman')).toBeInTheDocument();
+    expect(screen.getByText(/5\s+mots/)).toBeInTheDocument();
+    expect(screen.getByText(/version\s+2/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Ouvrir/i })).toHaveAttribute(
       'href',
       '/documents/doc-1'

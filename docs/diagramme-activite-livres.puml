@@ -1,0 +1,42 @@
+@startuml
+title Alfred — Diagramme d’activité — Gérer ses livres
+
+start
+
+:Accéder à "/books"\nou section livres de "/documents";
+:Afficher la liste des livres;
+
+if (Créer un livre ?) then (oui)
+  :Saisir titre (+ description optionnelle);
+  :Créer le livre;
+  if (Création échoue ?) then (oui)
+    :Afficher l’erreur;
+    stop
+  endif
+endif
+
+if (Réorganiser les livres ?) then (oui)
+  :Glisser-déposer un livre;
+  :Enregistrer le nouvel ordre;
+  if (Échec enregistrement ?) then (oui)
+    :Restaurer l’ordre précédent;
+  endif
+endif
+
+if (Consulter un livre ?) then (oui)
+  :Ouvrir "/books/[id]";
+  :Afficher les chapitres\n(documents rattachés);
+endif
+
+if (Supprimer un livre ?) then (oui)
+  :Afficher une confirmation;
+  if (Confirmation) then (oui)
+    :Supprimer le livre;
+    :Retirer les chapitres du livre\n(sans supprimer les documents);
+  else (non)
+    :Annuler;
+  endif
+endif
+
+stop
+@enduml

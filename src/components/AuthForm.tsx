@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@shared/providers/AuthProvider';
 import { LoginPayload, RegisterPayload } from '@shared/types';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -29,42 +28,38 @@ export function AuthForm({ mode }: AuthFormProps) {
   });
 
   const { login, register: signup } = useAuth();
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
-  const submitHandler = handleSubmit(
-    async (values: AuthFormValues): Promise<void> => {
-      setError(null);
-      try {
-        const payload: LoginPayload = {
-          email: values.email,
-          password: values.password,
-        };
-        if (mode === 'login') {
-          await login(payload);
-        } else {
-          const registerPayload: RegisterPayload = payload;
-          await signup(registerPayload);
-        }
-        router.push('/documents');
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Une erreur est survenue'
-        );
+  const onSubmit = async (values: AuthFormValues): Promise<void> => {
+    setError(null);
+    try {
+      const payload: LoginPayload = {
+        email: values.email,
+        password: values.password,
+      };
+      if (mode === 'login') {
+        await login(payload);
+      } else {
+        const registerPayload: RegisterPayload = payload;
+        await signup(registerPayload);
       }
+      // La redirection est gérée automatiquement par AuthLayout
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
-  );
+  };
 
   return (
     <form
       onSubmit={(event) => {
-        void submitHandler(event);
+        event.preventDefault();
+        void handleSubmit(onSubmit)(event);
       }}
-      className="space-y-4"
+      className="font-interface space-y-4"
     >
       <div>
         <label
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-neutral-text"
           htmlFor={`${mode}-email`}
         >
           Email
@@ -73,17 +68,19 @@ export function AuthForm({ mode }: AuthFormProps) {
           id={`${mode}-email`}
           type="email"
           {...register('email')}
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:text-base"
+          className="mt-1 w-full rounded-md border border-neutral-border bg-white px-3 py-2 text-sm text-neutral-text focus:border-ai-primary focus:outline-none focus:ring-2 focus:ring-ai-primary focus:ring-offset-1 sm:text-base"
           placeholder="votre@email.com"
         />
         {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+          <p className="mt-1 text-sm text-action-error">
+            {errors.email.message}
+          </p>
         )}
       </div>
 
       <div>
         <label
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-neutral-text"
           htmlFor={`${mode}-password`}
         >
           Mot de passe
@@ -92,16 +89,18 @@ export function AuthForm({ mode }: AuthFormProps) {
           id={`${mode}-password`}
           type="password"
           {...register('password')}
-          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:text-base"
+          className="mt-1 w-full rounded-md border border-neutral-border bg-white px-3 py-2 text-sm text-neutral-text focus:border-ai-primary focus:outline-none focus:ring-2 focus:ring-ai-primary focus:ring-offset-1 sm:text-base"
           placeholder="••••••••"
         />
         {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          <p className="mt-1 text-sm text-action-error">
+            {errors.password.message}
+          </p>
         )}
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+        <div className="rounded-md bg-action-error/10 border border-action-error/30 px-3 py-2 text-sm text-action-error">
           {error}
         </div>
       )}
@@ -109,7 +108,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:py-2 sm:text-base"
+        className="w-full rounded-lg bg-gradient-to-r from-ai-primary to-ai-primaryAlt px-6 py-3 text-sm font-bold text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-ai-primary focus:ring-offset-2 sm:text-base"
       >
         {isSubmitting
           ? 'Chargement...'

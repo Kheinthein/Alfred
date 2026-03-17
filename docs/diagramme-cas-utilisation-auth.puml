@@ -1,0 +1,115 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam shadowing false
+title Alfred — Cas d'utilisation (niveau système — espace authentifié)
+
+actor "Utilisateur\n(authentifié)" as User
+actor "Service IA externe\n(Gemini)" as AI
+
+rectangle "Alfred (Espace authentifié)" {
+
+  package "Documents" {
+    usecase "Lister documents\n(recherche, tri, filtres)" as UC_Docs_List
+    usecase "Créer document" as UC_Docs_Create
+    usecase "Importer document\n(.txt / .md)" as UC_Docs_Import
+    usecase "Consulter document" as UC_Docs_View
+    usecase "Modifier document\n(sauvegarde auto)" as UC_Docs_Update
+    usecase "Gérer les tags\ndu document" as UC_Docs_Tags
+    usecase "Consulter historique\ndes versions" as UC_Docs_Versions
+    usecase "Restaurer une version" as UC_Docs_Restore
+    usecase "Supprimer document\n(corbeille)" as UC_Docs_Delete
+    usecase "Réordonner documents" as UC_Docs_Reorder
+    usecase "Classer document\ndans un livre" as UC_MoveToBook
+    usecase "Retirer document\nd'un livre" as UC_Unassign
+    usecase "Exporter document\n(PDF / TXT / MD)" as UC_Docs_Export
+  }
+
+  package "Corbeille" {
+    usecase "Consulter la corbeille" as UC_Trash_List
+    usecase "Restaurer un document" as UC_Trash_Restore
+    usecase "Supprimer définitivement" as UC_Trash_Purge
+  }
+
+  package "Tags" {
+    usecase "Créer / modifier / supprimer\nun tag" as UC_Tags_CRUD
+  }
+
+  package "Livres" {
+    usecase "Lister livres" as UC_Books_List
+    usecase "Créer livre" as UC_Books_Create
+    usecase "Consulter livre\n(chapitres)" as UC_Books_View
+    usecase "Modifier livre" as UC_Books_Update
+    usecase "Supprimer livre" as UC_Books_Delete
+    usecase "Réordonner livres" as UC_Books_Reorder
+    usecase "Réordonner chapitres\nd'un livre" as UC_ReorderChapters
+    usecase "Exporter livre\n(PDF / TXT)" as UC_Books_Export
+  }
+
+  package "Assistant IA" {
+    usecase "Analyser document\navec IA" as UC_AI
+    usecase "Analyse syntaxe" as UC_AI_Syntax
+    usecase "Analyse style" as UC_AI_Style
+    usecase "Suggestions progression" as UC_AI_Prog
+    usecase "Chat avec l'IA\nsur le document" as UC_Chat
+  }
+
+  package "Statistiques" {
+    usecase "Consulter statistiques\nd'écriture" as UC_Stats
+  }
+
+  package "Profil & Compte" {
+    usecase "Modifier nom / email\n/ mot de passe" as UC_Profile_Update
+    usecase "Supprimer son compte" as UC_Profile_Delete
+  }
+
+  usecase "Se déconnecter" as UC_Logout
+}
+
+User --> UC_Docs_List
+User --> UC_Docs_Create
+User --> UC_Docs_Import
+User --> UC_Docs_View
+User --> UC_Docs_Update
+User --> UC_Docs_Tags
+User --> UC_Docs_Versions
+User --> UC_Docs_Delete
+User --> UC_Docs_Reorder
+User --> UC_Docs_Export
+User --> UC_MoveToBook
+User --> UC_Unassign
+
+User --> UC_Trash_List
+User --> UC_Trash_Restore
+User --> UC_Trash_Purge
+
+User --> UC_Tags_CRUD
+
+User --> UC_Books_List
+User --> UC_Books_Create
+User --> UC_Books_View
+User --> UC_Books_Update
+User --> UC_Books_Delete
+User --> UC_Books_Reorder
+User --> UC_ReorderChapters
+User --> UC_Books_Export
+
+User --> UC_AI
+User --> UC_Chat
+User --> UC_Stats
+
+User --> UC_Profile_Update
+User --> UC_Profile_Delete
+
+User --> UC_Logout
+
+UC_AI .> UC_AI_Syntax : <<extend>>
+UC_AI .> UC_AI_Style : <<extend>>
+UC_AI .> UC_AI_Prog : <<extend>>
+
+UC_Docs_Versions .> UC_Docs_Restore : <<extend>>
+
+AI <-- UC_AI
+AI <-- UC_Chat
+@enduml

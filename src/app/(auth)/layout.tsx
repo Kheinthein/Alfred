@@ -14,12 +14,12 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/app/documents');
+      router.replace('/documents');
     }
   }, [isAuthenticated, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="font-interface flex-1 flex items-center justify-center p-4">
       {children}
     </div>
   );

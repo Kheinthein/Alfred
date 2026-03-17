@@ -32,6 +32,14 @@ export interface ProgressionSuggestionResult {
 }
 
 /**
+ * Message pour le chat avec l'IA
+ */
+export interface AIChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+/**
  * Port (interface) pour les services d'IA
  * Le domaine définit QUOI faire, pas COMMENT
  * Les implémentations concrètes (Claude, OpenAI, etc.) sont dans l'infrastructure
@@ -63,4 +71,11 @@ export interface IAIServicePort {
    * Génère un résumé du texte
    */
   summarize(text: string, maxWords: number): Promise<string>;
+
+  /**
+   * Conversation libre avec l'IA, en contexte d'un document
+   * @param messages - historique de la conversation
+   * @param documentContext - contenu du document actuel (pour personnaliser les réponses)
+   */
+  chat(messages: AIChatMessage[], documentContext: string): Promise<string>;
 }

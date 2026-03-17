@@ -13,11 +13,24 @@ interface UpdateDocumentPayload {
 }
 
 export const documentService = {
-  async list(): Promise<DocumentDTO[]> {
+  async list(options?: {
+    search?: string;
+    tagId?: string;
+    styleId?: string;
+    sortField?: string;
+    sortOrder?: string;
+  }): Promise<DocumentDTO[]> {
+    const qs = new URLSearchParams();
+    if (options?.search) qs.set('search', options.search);
+    if (options?.tagId) qs.set('tagId', options.tagId);
+    if (options?.styleId) qs.set('styleId', options.styleId);
+    if (options?.sortField) qs.set('sortField', options.sortField);
+    if (options?.sortOrder) qs.set('sortOrder', options.sortOrder);
+    const params = qs.toString() ? `?${qs.toString()}` : '';
     const { data } = await apiClient.get<{
       success: boolean;
       data: { documents: DocumentDTO[] };
-    }>('/documents');
+    }>(`/documents${params}`);
     return data.data.documents;
   },
 
@@ -54,5 +67,32 @@ export const documentService = {
 
   async reorder(documentIds: string[]): Promise<void> {
     await apiClient.post('/documents/reorder', { documentIds });
+  },
+
+  async listTrash(): Promise<DocumentDTO[]> {
+    const { data } = await apiClient.get<{
+      success: boolean;
+      data: { documents: DocumentDTO[] };
+    }>('/documents/trash');
+    return data.data.documents;
+  },
+
+  async restore(id: string): Promise<void> {
+    await apiClient.patch(`/documents/${id}`, { action: 'restore' });
+  },
+
+  async purge(id: string): Promise<void> {
+    await apiClient.patch(`/documents/${id}`, { action: 'purge' });
+  },
+
+  async moveToBook(
+    id: string,
+    bookId: string | null,
+    chapterOrder?: number | null
+  ): Promise<void> {
+    await apiClient.post(`/documents/${id}/move-to-book`, {
+      bookId,
+      chapterOrder,
+    });
   },
 };

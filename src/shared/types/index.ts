@@ -2,7 +2,7 @@
  * Types partagés de l'application
  */
 
-export type AIProvider = 'openai' | 'claude' | 'mistral' | 'ollama';
+export type AIProvider = 'openai' | 'claude' | 'mistral' | 'ollama' | 'gemini';
 
 export type AnalysisType = 'syntax' | 'style' | 'progression';
 
@@ -58,8 +58,24 @@ export interface DocumentDTO {
   style: WritingStyleDTO;
   version: number;
   sortOrder: number;
+  bookId?: string | null;
+  chapterOrder?: number | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface BookDTO {
+  id: string;
+  title: string;
+  description: string | null;
+  sortOrder: number;
+  chapterCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BookWithChaptersDTO extends BookDTO {
+  chapters: DocumentDTO[];
 }
 
 export interface AIAnalysisDTO {
@@ -76,4 +92,17 @@ export interface AnalyzeResponse {
     timestamp: string;
     processingTime: string;
   };
+}
+
+export interface ChatMessageDTO {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
+
+export interface ChatConversationDTO {
+  id: string;
+  documentId: string;
+  createdAt: string;
 }
