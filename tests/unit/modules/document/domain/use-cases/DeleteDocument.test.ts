@@ -21,6 +21,10 @@ describe('DeleteDocument Use Case', () => {
       delete: jest.fn(),
       countByUserId: jest.fn(),
       updateSortOrders: jest.fn(),
+      softDelete: jest.fn(),
+      restore: jest.fn(),
+      findByIdIncludeDeleted: jest.fn(),
+      findDeletedByUserId: jest.fn(),
     };
 
     mockStyle = new WritingStyle('style-1', 'Roman', 'Style roman');

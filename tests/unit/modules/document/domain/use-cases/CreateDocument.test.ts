@@ -19,6 +19,10 @@ describe('CreateDocument Use Case', () => {
       delete: jest.fn(),
       countByUserId: jest.fn(),
       updateSortOrders: jest.fn(),
+      softDelete: jest.fn(),
+      restore: jest.fn(),
+      findByIdIncludeDeleted: jest.fn(),
+      findDeletedByUserId: jest.fn(),
     };
 
     createDocument = new CreateDocument(mockDocumentRepository);

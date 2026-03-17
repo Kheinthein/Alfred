@@ -17,6 +17,7 @@ const mockAIService: IAIServicePort = {
   analyzeStyle: jest.fn(),
   suggestProgression: jest.fn(),
   summarize: jest.fn(),
+  chat: jest.fn(),
 };
 
 beforeAll(() => {

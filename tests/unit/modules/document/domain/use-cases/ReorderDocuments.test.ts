@@ -21,6 +21,10 @@ describe('ReorderDocuments Use Case', () => {
       delete: jest.fn(),
       countByUserId: jest.fn(),
       updateSortOrders: jest.fn(),
+      softDelete: jest.fn(),
+      restore: jest.fn(),
+      findByIdIncludeDeleted: jest.fn(),
+      findDeletedByUserId: jest.fn(),
     };
 
     style = new WritingStyle('style-1', 'Roman', 'Style roman');

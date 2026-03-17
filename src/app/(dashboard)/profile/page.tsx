@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CheckCircle, LogOut, Trash2, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface UserProfile {
@@ -44,14 +44,17 @@ export default function ProfilePage(): React.JSX.Element {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState('');
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading } = useQuery<UserProfile>({
     queryKey: ['profile'],
     queryFn: fetchProfile,
-    onSuccess: (data: UserProfile) => {
-      setName(data.name ?? '');
-      setEmail(data.email);
-    },
-  } as Parameters<typeof useQuery>[0]);
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name ?? '');
+      setEmail(profile.email);
+    }
+  }, [profile]);
 
   const updateMutation = useMutation({
     mutationFn: async (payload: Record<string, string>) => {

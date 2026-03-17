@@ -26,12 +26,15 @@ describe('GeminiAdapter', () => {
       },
     });
 
-    // Mock du client Gemini
-    MockedGoogleGenerativeAI.mockImplementation(() => ({
-      getGenerativeModel: () => ({
-        generateContent: mockGenerateContent,
-      }),
-    }));
+    // Mock du client Gemini (cast partiel car on ne mocke que getGenerativeModel)
+    MockedGoogleGenerativeAI.mockImplementation(
+      () =>
+        ({
+          getGenerativeModel: () => ({
+            generateContent: mockGenerateContent,
+          }),
+        }) as unknown as GoogleGenerativeAI
+    );
 
     adapter = new GeminiAdapter(mockApiKey);
   });
@@ -50,15 +53,16 @@ describe('GeminiAdapter', () => {
     });
 
     it('devrait lancer une erreur si pas de contenu dans la réponse', async () => {
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: jest.fn().mockResolvedValue({
-            response: {
-              text: () => null,
-            },
-          }),
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: jest.fn().mockResolvedValue({
+                response: { text: () => null },
+              }),
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
 
@@ -77,21 +81,24 @@ describe('GeminiAdapter', () => {
         'Style épique et merveilleux'
       );
 
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: jest.fn().mockResolvedValue({
-            response: {
-              text: () =>
-                JSON.stringify({
-                  tone: 'Épique',
-                  vocabulary: 'Soutenu',
-                  suggestions: ['Ajouter plus de descriptions'],
-                  alignmentScore: 0.85,
-                }),
-            },
-          }),
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: jest.fn().mockResolvedValue({
+                response: {
+                  text: () =>
+                    JSON.stringify({
+                      tone: 'Épique',
+                      vocabulary: 'Soutenu',
+                      suggestions: ['Ajouter plus de descriptions'],
+                      alignmentScore: 0.85,
+                    }),
+                },
+              }),
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
       const result = await newAdapter.analyzeStyle(text, style);
@@ -113,23 +120,26 @@ describe('GeminiAdapter', () => {
         'Style épique et merveilleux'
       );
 
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: jest.fn().mockResolvedValue({
-            response: {
-              text: () =>
-                JSON.stringify({
-                  suggestions: [
-                    'Décrire la créature mystérieuse',
-                    'Introduire un obstacle',
-                  ],
-                  reasoning: 'Pour créer du suspense',
-                  alternatives: ['Rencontre avec un allié'],
-                }),
-            },
-          }),
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: jest.fn().mockResolvedValue({
+                response: {
+                  text: () =>
+                    JSON.stringify({
+                      suggestions: [
+                        'Décrire la créature mystérieuse',
+                        'Introduire un obstacle',
+                      ],
+                      reasoning: 'Pour créer du suspense',
+                      alternatives: ['Rencontre avec un allié'],
+                    }),
+                },
+              }),
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
       const result = await newAdapter.suggestProgression(text, style);
@@ -156,11 +166,14 @@ describe('GeminiAdapter', () => {
         },
       });
 
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: mockGenerateContent,
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: mockGenerateContent,
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
       await newAdapter.suggestProgression(text, style, context);
@@ -177,16 +190,19 @@ describe('GeminiAdapter', () => {
         'Un long texte qui raconte une histoire complexe avec de nombreux personnages et rebondissements.';
       const maxWords = 10;
 
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: jest.fn().mockResolvedValue({
-            response: {
-              text: () =>
-                'Histoire complexe avec personnages et rebondissements.',
-            },
-          }),
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: jest.fn().mockResolvedValue({
+                response: {
+                  text: () =>
+                    'Histoire complexe avec personnages et rebondissements.',
+                },
+              }),
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
       const result = await newAdapter.summarize(text, maxWords);
@@ -198,16 +214,19 @@ describe('GeminiAdapter', () => {
 
   describe('parseJSON', () => {
     it('devrait extraire le JSON des balises markdown', async () => {
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: jest.fn().mockResolvedValue({
-            response: {
-              text: () =>
-                '```json\n{"errors": [], "suggestions": ["test"], "confidence": 0.9}\n```',
-            },
-          }),
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: jest.fn().mockResolvedValue({
+                response: {
+                  text: () =>
+                    '```json\n{"errors": [], "suggestions": ["test"], "confidence": 0.9}\n```',
+                },
+              }),
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
       const result = await newAdapter.analyzeSyntax('test');
@@ -218,15 +237,16 @@ describe('GeminiAdapter', () => {
     });
 
     it('devrait lancer une erreur si aucun JSON trouvé', async () => {
-      MockedGoogleGenerativeAI.mockImplementation(() => ({
-        getGenerativeModel: () => ({
-          generateContent: jest.fn().mockResolvedValue({
-            response: {
-              text: () => 'Pas de JSON ici',
-            },
-          }),
-        }),
-      }));
+      MockedGoogleGenerativeAI.mockImplementation(
+        () =>
+          ({
+            getGenerativeModel: () => ({
+              generateContent: jest.fn().mockResolvedValue({
+                response: { text: () => 'Pas de JSON ici' },
+              }),
+            }),
+          }) as unknown as GoogleGenerativeAI
+      );
 
       const newAdapter = new GeminiAdapter(mockApiKey);
 

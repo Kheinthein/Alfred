@@ -24,6 +24,7 @@ describe('AnalyzeText Use Case', () => {
       analyzeStyle: jest.fn(),
       suggestProgression: jest.fn(),
       summarize: jest.fn(),
+      chat: jest.fn(),
     };
 
     mockAIAnalysisRepo = {
