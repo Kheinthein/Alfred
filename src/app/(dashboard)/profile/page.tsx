@@ -185,166 +185,166 @@ export default function ProfilePage(): React.JSX.Element {
       {/* Onglet Profil */}
       {activeTab === 'profile' && (
         <>
-        <form
-          onSubmit={handleSubmit}
-          className="scroll-parchment space-y-5 rounded-xl p-6"
-        >
-        <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-neutral-textSecondary">
-          Informations personnelles
-        </h2>
-
-        <div>
-          <label
-            className="font-interface block text-sm font-medium text-parchment-text"
-            htmlFor="profile-name"
+          <form
+            onSubmit={handleSubmit}
+            className="scroll-parchment space-y-5 rounded-xl p-6"
           >
-            Nom d&apos;affichage
-          </label>
-          <input
-            id="profile-name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Votre nom"
-            className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
-          />
-        </div>
+            <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-neutral-textSecondary">
+              Informations personnelles
+            </h2>
 
-        <div>
-          <label
-            className="font-interface block text-sm font-medium text-parchment-text"
-            htmlFor="profile-email"
-          >
-            Email
-          </label>
-          <input
-            id="profile-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
-          />
-        </div>
+            <div>
+              <label
+                className="font-interface block text-sm font-medium text-parchment-text"
+                htmlFor="profile-name"
+              >
+                Nom d&apos;affichage
+              </label>
+              <input
+                id="profile-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Votre nom"
+                className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+              />
+            </div>
 
-        <hr className="border-parchment-border/60" />
+            <div>
+              <label
+                className="font-interface block text-sm font-medium text-parchment-text"
+                htmlFor="profile-email"
+              >
+                Email
+              </label>
+              <input
+                id="profile-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+              />
+            </div>
 
-        <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-neutral-textSecondary">
-          Changer de mot de passe
-        </h2>
+            <hr className="border-parchment-border/60" />
 
-        <div>
-          <label
-            className="font-interface block text-sm font-medium text-parchment-text"
-            htmlFor="current-password"
-          >
-            Mot de passe actuel
-          </label>
-          <input
-            id="current-password"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            autoComplete="current-password"
-            className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
-          />
-        </div>
+            <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-neutral-textSecondary">
+              Changer de mot de passe
+            </h2>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label
-              className="font-interface block text-sm font-medium text-parchment-text"
-              htmlFor="new-password"
-            >
-              Nouveau mot de passe
-            </label>
-            <input
-              id="new-password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              autoComplete="new-password"
-              className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
-            />
+            <div>
+              <label
+                className="font-interface block text-sm font-medium text-parchment-text"
+                htmlFor="current-password"
+              >
+                Mot de passe actuel
+              </label>
+              <input
+                id="current-password"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                autoComplete="current-password"
+                className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  className="font-interface block text-sm font-medium text-parchment-text"
+                  htmlFor="new-password"
+                >
+                  Nouveau mot de passe
+                </label>
+                <input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+                />
+              </div>
+              <div>
+                <label
+                  className="font-interface block text-sm font-medium text-parchment-text"
+                  htmlFor="confirm-password"
+                >
+                  Confirmer
+                </label>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
+                />
+              </div>
+            </div>
+
+            {formError && (
+              <p className="font-interface text-sm text-action-error">
+                {formError}
+              </p>
+            )}
+            {successMessage && (
+              <p className="font-interface flex items-center gap-1.5 text-sm text-action-success">
+                <CheckCircle size={14} />
+                {successMessage}
+              </p>
+            )}
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={updateMutation.isPending}
+                className="font-interface flex items-center gap-2 rounded-lg bg-gradient-to-r from-ai-primary to-ai-primaryAlt px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {updateMutation.isPending ? <Spinner size="sm" /> : null}
+                Enregistrer
+              </button>
+            </div>
+          </form>
+
+          {/* Zone danger */}
+          <div className="mt-8 rounded-xl border border-action-error/30 bg-action-error/5 p-6">
+            <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-action-error">
+              Zone dangereuse
+            </h2>
+            <p className="font-interface mt-2 text-sm text-neutral-textSecondary">
+              La suppression de votre compte est définitive et irréversible.
+              Toutes vos données (documents, livres, analyses, conversations)
+              seront supprimées conformément au RGPD.
+            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  router.push('/');
+                }}
+                className="font-interface flex items-center gap-2 rounded-lg border border-neutral-border bg-white px-4 py-2 text-sm font-medium text-neutral-textSecondary transition-all hover:bg-neutral-bg"
+              >
+                <LogOut size={15} />
+                Se déconnecter
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteError('');
+                  setShowDeleteConfirm(true);
+                }}
+                className="font-interface flex items-center gap-2 rounded-lg border border-action-error bg-white px-4 py-2 text-sm font-medium text-action-error transition-all hover:bg-action-error/10"
+              >
+                <Trash2 size={15} />
+                Supprimer mon compte
+              </button>
+            </div>
           </div>
-          <div>
-            <label
-              className="font-interface block text-sm font-medium text-parchment-text"
-              htmlFor="confirm-password"
-            >
-              Confirmer
-            </label>
-            <input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              autoComplete="new-password"
-              className="font-writing mt-1 w-full rounded-lg border border-parchment-border bg-parchment-editor px-3 py-2 text-sm text-parchment-text focus:outline-none focus:ring-2 focus:ring-ai-primary"
-            />
-          </div>
-        </div>
-
-        {formError && (
-          <p className="font-interface text-sm text-action-error">
-            {formError}
-          </p>
-        )}
-        {successMessage && (
-          <p className="font-interface flex items-center gap-1.5 text-sm text-action-success">
-            <CheckCircle size={14} />
-            {successMessage}
-          </p>
-        )}
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={updateMutation.isPending}
-            className="font-interface flex items-center gap-2 rounded-lg bg-gradient-to-r from-ai-primary to-ai-primaryAlt px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {updateMutation.isPending ? <Spinner size="sm" /> : null}
-            Enregistrer
-          </button>
-        </div>
-      </form>
-
-      {/* Zone danger */}
-      <div className="mt-8 rounded-xl border border-action-error/30 bg-action-error/5 p-6">
-        <h2 className="font-interface text-sm font-semibold uppercase tracking-wide text-action-error">
-          Zone dangereuse
-        </h2>
-        <p className="font-interface mt-2 text-sm text-neutral-textSecondary">
-          La suppression de votre compte est définitive et irréversible. Toutes
-          vos données (documents, livres, analyses, conversations) seront
-          supprimées conformément au RGPD.
-        </p>
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <button
-            type="button"
-            onClick={() => {
-              logout();
-              router.push('/');
-            }}
-            className="font-interface flex items-center gap-2 rounded-lg border border-neutral-border bg-white px-4 py-2 text-sm font-medium text-neutral-textSecondary transition-all hover:bg-neutral-bg"
-          >
-            <LogOut size={15} />
-            Se déconnecter
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setDeleteError('');
-              setShowDeleteConfirm(true);
-            }}
-            className="font-interface flex items-center gap-2 rounded-lg border border-action-error bg-white px-4 py-2 text-sm font-medium text-action-error transition-all hover:bg-action-error/10"
-          >
-            <Trash2 size={15} />
-            Supprimer mon compte
-          </button>
-        </div>
-      </div>
-      </>
+        </>
       )}
 
       {/* Dialog suppression compte */}

@@ -419,7 +419,10 @@ export default function BookDetailPage() {
           {showChapterForm ? (
             <div className="mt-4 rounded-lg border border-parchment-border bg-writing-editor p-4 space-y-3">
               <div>
-                <label htmlFor="chapter-title" className="font-writing block text-xs font-medium text-parchment-text mb-1">
+                <label
+                  htmlFor="chapter-title"
+                  className="font-writing block text-xs font-medium text-parchment-text mb-1"
+                >
                   Titre du chapitre
                 </label>
                 <input
@@ -433,7 +436,10 @@ export default function BookDetailPage() {
                 />
               </div>
               <div>
-                <label htmlFor="chapter-style" className="font-writing block text-xs font-medium text-parchment-text mb-1">
+                <label
+                  htmlFor="chapter-style"
+                  className="font-writing block text-xs font-medium text-parchment-text mb-1"
+                >
                   Style
                 </label>
                 <select
