@@ -28,6 +28,7 @@ export function TagPicker({ documentId }: TagPickerProps): React.JSX.Element {
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
 
   const { data: allTags = [] } = useQuery({
     queryKey: ['tags'],
@@ -73,16 +74,16 @@ export function TagPicker({ documentId }: TagPickerProps): React.JSX.Element {
     },
   });
 
-  // Fermer au clic extérieur
+  // Fermer au clic extérieur (en excluant le portal lui-même)
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (
-        buttonRef.current &&
-        !buttonRef.current
-          .closest('[data-tag-picker]')
-          ?.contains(e.target as Node)
-      ) {
+      const target = e.target as Node;
+      const insideTrigger = buttonRef.current
+        ?.closest('[data-tag-picker]')
+        ?.contains(target);
+      const insidePortal = portalRef.current?.contains(target);
+      if (!insideTrigger && !insidePortal) {
         setOpen(false);
       }
     };
@@ -118,6 +119,7 @@ export function TagPicker({ documentId }: TagPickerProps): React.JSX.Element {
       {open &&
         createPortal(
           <div
+            ref={portalRef}
             className="fixed z-50"
             style={{
               top: (buttonRef.current?.getBoundingClientRect().bottom ?? 0) + 6,

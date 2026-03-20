@@ -1,5 +1,5 @@
 import { getAuthToken } from '@shared/utils/authStorage';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 export const apiClient = axios.create({
   baseURL: '/api',
@@ -15,3 +15,14 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError<{ error?: { message?: string } }>) => {
+    const serverMessage = error.response?.data?.error?.message;
+    if (serverMessage) {
+      return Promise.reject(new Error(serverMessage));
+    }
+    return Promise.reject(error);
+  }
+);
