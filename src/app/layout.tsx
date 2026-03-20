@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     default: "Alfred - Assistant d'Écriture IA",
     template: '%s | Alfred',
   },
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
   description: DESCRIPTION,
   keywords: [
     'assistant écriture intelligence artificielle',

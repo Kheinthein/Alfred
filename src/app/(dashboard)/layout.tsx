@@ -2,6 +2,7 @@
 
 import { useAuth } from '@shared/providers/AuthProvider';
 import { BookOpen, FileText, Menu, User, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
@@ -53,14 +54,23 @@ export default function DashboardLayout({
       <header className="border-b border-neutral-border/50 bg-neutral-bgSecondary/80 backdrop-blur-sm">
         <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
-            {/* Mobile: Logo/User info */}
-            <div className="flex-1">
-              <p className="text-xs text-neutral-textSecondary sm:text-sm">
-                Bienvenue
-              </p>
-              <p className="text-sm font-semibold text-neutral-text sm:text-base">
-                {user?.email}
-              </p>
+            {/* Logo + User info */}
+            <div className="flex flex-1 items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="Alfred"
+                width={72}
+                height={72}
+                className="rounded-full object-contain"
+              />
+              <div>
+                <p className="text-xs text-neutral-textSecondary sm:text-sm">
+                  Bienvenue
+                </p>
+                <p className="text-sm font-semibold text-neutral-text sm:text-base">
+                  {user?.email}
+                </p>
+              </div>
             </div>
 
             {/* Desktop: Navigation buttons */}

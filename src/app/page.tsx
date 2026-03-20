@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export default function Home() {
   return (
     <div className="font-interface flex-1 flex items-center justify-center bg-gradient-to-br from-neutral-bg via-neutral-bgSecondary to-white p-4">
@@ -7,6 +9,15 @@ export default function Home() {
           <span className="text-xs font-semibold text-ai-primary uppercase tracking-wide">
             Assistant IA
           </span>
+        </div>
+        <div className="mb-4 flex justify-center">
+          <Image
+            src="/logo.png"
+            alt="Alfred"
+            width={200}
+            height={200}
+            className="object-contain"
+          />
         </div>
         <h1 className="font-writing text-5xl font-bold text-parchment-text mb-4 sm:text-6xl">
           Alfred
