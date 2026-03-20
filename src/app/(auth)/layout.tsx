@@ -2,13 +2,15 @@
 
 import { useAuth } from '@shared/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
-import { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 
 interface AuthLayoutProps {
   children: ReactNode;
 }
 
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default function AuthLayout({
+  children,
+}: AuthLayoutProps): React.JSX.Element {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 

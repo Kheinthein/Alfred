@@ -4,10 +4,11 @@ import { DocumentEditor } from '@components/DocumentEditor';
 import { ExportButton } from '@components/ExportButton';
 import { documentService } from '@shared/services/documentService';
 import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-export default function DocumentDetailPage() {
+export default function DocumentDetailPage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
   const documentId = params.id;
 

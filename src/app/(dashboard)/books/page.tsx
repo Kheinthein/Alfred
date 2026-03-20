@@ -10,9 +10,9 @@ import {
 import { bookService } from '@shared/services/bookService';
 import type { BookDTO } from '@shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-export default function BooksPage() {
+export default function BooksPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ title: '', description: '' });
 

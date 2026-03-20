@@ -1,7 +1,8 @@
+import React from 'react';
 import { AuthForm } from '@components/AuthForm';
 import Link from 'next/link';
 
-export default function RegisterPage() {
+export default function RegisterPage(): React.JSX.Element {
   return (
     <div className="w-full max-w-md rounded-2xl bg-gradient-to-br from-neutral-bgSecondary to-white border-2 border-ai-primary/20 p-8 shadow-xl sm:p-10">
       <div className="mb-6 flex items-center gap-2">
