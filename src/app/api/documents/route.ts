@@ -76,10 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 2. Parser et valider le body
     const body: unknown = await request.json();
-    console.log('📝 Body reçu pour création document:', body);
-
     const data = CreateDocumentDTOSchema.parse(body);
-    console.log('✅ Validation passée:', data);
 
     // 3. Récupérer le style
     const styleData = await prisma.writingStyle.findUnique({
