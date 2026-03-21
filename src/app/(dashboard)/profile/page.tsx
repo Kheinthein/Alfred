@@ -97,7 +97,7 @@ export default function ProfilePage(): React.JSX.Element {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     setFormError('');
 

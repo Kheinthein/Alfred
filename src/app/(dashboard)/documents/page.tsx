@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { AddToBookButton } from '@components/AddToBookButton';
 import { BooksSection } from '@components/BookDropZone';
 import { BooksList } from '@components/BooksList';
@@ -31,7 +32,7 @@ import { Plus, Search, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-export default function DocumentsPage() {
+export default function DocumentsPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [form, setForm] = useState({ title: '', styleId: '' });
@@ -49,7 +50,7 @@ export default function DocumentsPage() {
   const [sortOrder, setSortOrder] = useState<string>('desc');
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSearchChange = (value: string) => {
+  const handleSearchChange = (value: string): void => {
     setSearchInput(value);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {

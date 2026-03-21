@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { ChapterContent } from '@components/ChapterContent';
 import { SortableDocumentCard } from '@components/SortableDocumentCard';
 import { DndContext, type DragEndEvent, closestCenter } from '@dnd-kit/core';
@@ -20,7 +21,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-export default function BookDetailPage() {
+export default function BookDetailPage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
   const bookId = params.id;
   const router = useRouter();
@@ -192,7 +193,7 @@ export default function BookDetailPage() {
     },
   });
 
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) return;
     // Réinitialiser l'input pour permettre de re-sélectionner le même fichier
