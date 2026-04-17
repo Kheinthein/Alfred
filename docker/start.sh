@@ -1,11 +1,14 @@
 #!/bin/sh
 set -e
 
-# Créer le répertoire data si le volume est vide
+# Créer le répertoire data si nécessaire (volume Railway)
 mkdir -p /app/data
 
-# Appliquer les migrations Prisma (crée la DB si elle n'existe pas)
-npx prisma migrate deploy
+# Synchroniser le schéma Prisma (crée la DB si absente, applique les changements)
+npx prisma db push --skip-generate
 
-# Démarrer l'application
+# Seeder les données de base (styles d'écriture etc.) — silencieux si déjà présent
+npx tsx prisma/seed.ts || true
+
+# Démarrer l'application Next.js standalone
 exec node server.js
