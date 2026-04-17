@@ -12,14 +12,30 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=file:/app/data/prod.db
       - JWT_SECRET=${JWT_SECRET}
-      - AI_PROVIDER=${AI_PROVIDER:-openai}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Provider IA : claude | openai | gemini
+      - AI_PROVIDER=${AI_PROVIDER:-gemini}
+      # Gemini (Google) — utilisé par défaut
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      # OpenAI (optionnel, si AI_PROVIDER=openai)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4-turbo}
+      # Claude (optionnel, si AI_PROVIDER=claude)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
+      # Activer l'exposition des détails d'erreur pour diagnostiquer (à retirer après debug)
+      - EXPOSE_ERROR_DETAILS=${EXPOSE_ERROR_DETAILS:-false}
     volumes:
       - sqlite-data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'node', '-e', 'require("http").get("http://localhost:3000/api/health")']
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          'require("http").get("http://localhost:3000/api/health", r => process.exit(r.statusCode === 200 ? 0 : 1))',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,4 +54,3 @@ services:
 volumes:
   sqlite-data:
   redis-data:
-

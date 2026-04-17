@@ -1,7 +1,36 @@
 [build]
 builder = "NIXPACKS"
 
+# ⚠️ IMPORTANT : Pour que la base SQLite persiste entre les déploiements,
+# vous DEVEZ configurer un Volume Railway :
+#   1. Dans le dashboard Railway → Settings → Volumes → New Volume
+#   2. Mount path : /app/data
+#   3. Variables d'environnement à définir :
+#        DATABASE_URL=file:/app/data/prod.db
+#        JWT_SECRET=<générer 32+ chars aléatoires>
+#        AI_PROVIDER=gemini
+#        GEMINI_API_KEY=<votre clé>
+#        GEMINI_MODEL=gemini-2.5-flash
+#        NODE_ENV=production
+#
+# Sans volume, SQLite est recréée à chaque déploiement (données perdues).
+
 [deploy]
-startCommand = "cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public && prisma db push --accept-data-loss && npx tsx prisma/seed.ts || true && HOSTNAME=0.0.0.0 node .next/standalone/server.js"
+# - `prisma db push` (sans --accept-data-loss) : synchronise le schéma
+#   en préservant les données. Échoue (= deploy rollback) si un changement
+#   destructif est détecté — ce qui est le comportement voulu en production.
+# - `|| true` sur le seed : on ne bloque pas le déploiement si les styles
+#   existent déjà.
+startCommand = """
+mkdir -p /app/data && \
+cp -r .next/static .next/standalone/.next/static && \
+cp -r public .next/standalone/public && \
+npx prisma db push --skip-generate && \
+(npx tsx prisma/seed.ts || true) && \
+HOSTNAME=0.0.0.0 node .next/standalone/server.js
+"""
+
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30

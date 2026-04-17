@@ -1,0 +1,5 @@
+[variables]
+# Force NODE_ENV=production pendant le build Nixpacks/Railway.
+# Sans ça, Next.js 15 échoue au prerender /404 avec :
+# « Html should not be imported outside of pages/_document »
+NODE_ENV = "production"
