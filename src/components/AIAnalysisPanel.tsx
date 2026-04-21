@@ -4,6 +4,7 @@ import { AIAnalysisDTO, AnalysisType } from '@shared/types';
 interface AIAnalysisPanelProps {
   loading: boolean;
   analysis: AIAnalysisDTO | null;
+  error?: string | null;
   onAnalyze: (type: AnalysisType) => void;
 }
 
@@ -16,6 +17,7 @@ const labels: Record<AnalysisType, string> = {
 export function AIAnalysisPanel({
   loading,
   analysis,
+  error,
   onAnalyze,
 }: AIAnalysisPanelProps) {
   return (
@@ -50,6 +52,12 @@ export function AIAnalysisPanel({
           <span className="text-sm font-medium text-ai-primary">
             Analyse en cours...
           </span>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          ⚠️ {error}
         </div>
       )}
 

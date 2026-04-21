@@ -29,6 +29,7 @@ export function DocumentEditor({
   const [title, setTitle] = useState(document.title);
   const [analysis, setAnalysis] = useState<AIAnalysisDTO | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<SidePanelTab>('analyze');
 
   useEffect(() => {
@@ -63,10 +64,15 @@ export function DocumentEditor({
   };
 
   const performAnalyze = async (type: AnalysisType): Promise<void> => {
+    setAnalyzeError(null);
+    setIsAnalyzing(true);
     try {
-      setIsAnalyzing(true);
       const response = await aiService.analyze(document.id, type);
       setAnalysis(response.analysis);
+    } catch (err) {
+      setAnalyzeError(
+        err instanceof Error ? err.message : "Erreur lors de l'analyse"
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -166,6 +172,7 @@ export function DocumentEditor({
             <AIAnalysisPanel
               loading={isAnalyzing}
               analysis={analysis}
+              error={analyzeError}
               onAnalyze={handleAnalyze}
             />
           ) : (
