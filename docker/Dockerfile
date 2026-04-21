@@ -23,10 +23,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build Next.js — NODE_ENV doit être production sinon Next.js 15 échoue
-# au prerender /404 avec « Html should not be imported outside of _document »
-ENV NODE_ENV=production
-RUN npm run build
+# NODE_ENV forcé inline : ne peut pas être écrasé par les variables Railway
+# contrairement à une instruction ENV qui peut être overridée par --build-arg
+RUN NODE_ENV=production npm run build
 
 # Stage 3: Production
 FROM node:20-alpine AS runner
